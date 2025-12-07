@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <title>Õppime õigekirja</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Start screen -->
+    <section id="start-screen">
+      <h1>Õppime õigekirja</h1>
+      <label for="player-name">Sisesta oma nimi:</label>
+      <input type="text" id="player-name" placeholder="Nimi">
+      <button id="start-btn">Alusta mängu</button>
+    </section>
+
+    <!-- Game screen -->
+    <section id="game-screen" class="hidden">
+      <div id="top-bar">
+        <div id="player-label"></div>
+        <div id="progress-label"></div>
+        <div id="score-label"></div>
+      </div>
+
+      <div id="image-wrapper">
+        <img id="item-image" src="" alt="">
+      </div>
+
+      <div id="word-area">
+        <div id="blank-display"></div>
+        <input 
+          type="text" 
+          id="answer-input" 
+          autocomplete="off" 
+          placeholder="Kirjuta sõna siia">
+      </div>
+
+      <div id="controls">
+        <button id="submit-btn">Kontrolli</button>
+        <button id="next-btn" class="hidden">Järgmine</button>
+      </div>
+
+      <div id="feedback"></div>
+    </section>
+
+    <!-- End screen -->
+    <section id="end-screen" class="hidden">
+      <h2 id="end-message"></h2>
+      <p id="final-score"></p>
+      <button id="restart-btn">Mängi uuesti</button>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
