@@ -1,126 +1,901 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/index.html b/index.html
-index 2d8f4e3572a31e67f3aeb78acb155a6c103039b6..b4eb1b261fb27aa71971b5df1ea4bbb058531668 100644
---- a/index.html
-+++ b/index.html
-@@ -1,54 +1,63 @@
--<!doctype html>
--<html lang="et">
--<head>
--  <meta charset="utf-8" />
--  <meta name="viewport" content="width=device-width, initial-scale=1" />
--  <title>Õppime õigekirja</title>
--  <link rel="stylesheet" href="style.css" />
--</head>
--<body>
--  <main class="wrap">
--
--    <section id="screen-start" class="card">
--      <h1>Õppime õigekirja</h1>
--      <label for="name">Sisesta oma nimi:</label>
--      <input id="name" type="text" placeholder="Nimi" />
--      <button id="btn-start" type="button">Alusta mängu</button>
--      <div id="start-error" class="error" aria-live="polite"></div>
--    </section>
--
--    <section id="screen-game" class="card hidden">
--      <div class="top">
--        <div id="lbl-name"></div>
--        <div id="lbl-progress"></div>
--        <div id="lbl-score"></div>
--      </div>
--
--      <div class="imgbox">
--        <img id="img" alt="" />
--      </div>
--
--      <div id="blanks" class="blanks"></div>
--
--      <!-- Per-letter inputs get injected here -->
--      <div id="letters" class="letters" aria-label="Sisesta tähed"></div>
--
--      <div class="row">
--        <button id="btn-check" type="button">Kontrolli</button>
--        <button id="btn-next" type="button" class="hidden">Järgmine</button>
--      </div>
--
--      <div id="feedback" class="feedback" aria-live="polite"></div>
--    </section>
--
--    <section id="screen-end" class="card hidden">
--      <h2 id="end-title"></h2>
--      <p id="end-score"></p>
--      <button id="btn-restart" type="button">Mängi uuesti</button>
--    </section>
--
--  </main>
--
--  <script src="script.js"></script>
--</body>
--</html>
-+<!doctype html>
-+<html lang="en">
-+<head>
-+  <meta charset="utf-8" />
-+  <meta name="viewport" content="width=device-width, initial-scale=1" />
-+  <title>Sunny Spelling Adventure</title>
-+  <link rel="stylesheet" href="style.css" />
-+</head>
-+<body>
-+  <main class="app">
-+    <section id="start-screen" class="panel show">
-+      <div class="sparkles" aria-hidden="true">
-+        <span>★</span><span>☆</span><span>★</span>
-+      </div>
-+      <h1>Sunny Spelling Adventure</h1>
-+      <p class="tagline">A cozy spelling game for little explorers</p>
-+      <label for="player-name">What's your name?</label>
-+      <input id="player-name" type="text" placeholder="Type your name" autocomplete="off" />
-+      <button id="start-button" type="button">Start spelling!</button>
-+      <div id="start-error" class="error" aria-live="polite"></div>
-+    </section>
-+
-+    <section id="game-screen" class="panel" hidden>
-+      <div class="stats">
-+        <div class="stat" id="stat-name">Player: –</div>
-+        <div class="stat" id="stat-progress">Question 0 / 10</div>
-+        <div class="stat" id="stat-score">Score: 0</div>
-+      </div>
-+      <div class="meter" aria-hidden="true">
-+        <div id="progress-bar" class="meter-fill"></div>
-+      </div>
-+
-+      <div class="card image-card">
-+        <img id="item-image" src="" alt="" />
-+      </div>
-+
-+      <div class="prompt">
-+        <p class="instruction">Look at the picture and spell the word:</p>
-+        <div id="blanks" class="blanks" aria-hidden="true"></div>
-+        <input id="guess-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Type the word here" />
-+      </div>
-+
-+      <div class="actions">
-+        <button id="check-button" type="button">Check my word</button>
-+        <button id="next-button" type="button" class="ghost" disabled>Next picture</button>
-+      </div>
-+
-+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
-+    </section>
-+
-+    <section id="end-screen" class="panel" hidden>
-+      <div class="sparkles" aria-hidden="true">
-+        <span>★</span><span>☆</span><span>★</span>
-+      </div>
-+      <h2>Great job, <span id="end-name"></span>!</h2>
-+      <p id="end-summary" class="summary"></p>
-+      <button id="restart-button" type="button">Play again</button>
-+    </section>
-+  </main>
-+
-+  <script src="script.js"></script>
-+</body>
-+</html>
- 
-EOF
-)
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estonian Spelling Game</title>
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#1a2a6c;
+      --card:#0f172a;
+      --card2:#111c3a;
+      --text:#f8fafc;
+      --muted:#cbd5e1;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --accent:#f59e0b;
+      --accent2:#60a5fa;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(1200px 800px at 10% 10%, rgba(96,165,250,.35), transparent 55%),
+        radial-gradient(1000px 700px at 90% 20%, rgba(245,158,11,.28), transparent 60%),
+        radial-gradient(900px 700px at 50% 120%, rgba(34,197,94,.22), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .wrap{max-width:980px; margin:0 auto; padding:18px 14px 42px;}
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:10px 8px;
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(96,165,250,1), rgba(245,158,11,1));
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:before{
+      content:"";
+      position:absolute; inset:-30%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), transparent 45%);
+      transform: rotate(12deg);
+      opacity:.65;
+    }
+    .title h1{margin:0; font-size:18px; letter-spacing:.2px;}
+    .title p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+
+    .topBtns{display:flex; gap:10px; align-items:center;}
+
+    button{
+      appearance:none;
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:700;
+      color:var(--text);
+      background: rgba(255,255,255,.08);
+      box-shadow: 0 12px 28px rgba(0,0,0,.18);
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease;
+      touch-action: manipulation;
+    }
+    button:active{ transform: translateY(1px) scale(.99); }
+    button.primary{
+      background: linear-gradient(135deg, rgba(96,165,250,1), rgba(245,158,11,1));
+      color:#081225;
+    }
+    button.ghost{ background: rgba(255,255,255,.06); }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      align-items:stretch;
+    }
+
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+      header{ flex-wrap:wrap; }
+      .topBtns{ width:100%; justify-content:flex-end; }
+    }
+
+    .panel{ padding:16px; }
+
+    .statusRow{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius: 999px;
+      padding:8px 10px;
+      background: rgba(15,23,42,.55);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size:12px;
+      user-select:none;
+    }
+
+    .dots{display:flex; gap:6px; align-items:center;}
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.20);
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .dot.done{ background: rgba(34,197,94,.75); }
+    .dot.bad{ background: rgba(239,68,68,.75); }
+    .dot.now{ outline: 3px solid rgba(245,158,11,.55); background: rgba(245,158,11,.65); }
+
+    .imageWrap{
+      background: rgba(2,6,23,.55);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      overflow:hidden;
+      aspect-ratio: 4 / 3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+
+    .imageWrap img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background: rgba(2,6,23,.35);
+    }
+
+    .imageHint{
+      position:absolute;
+      left:10px;
+      bottom:10px;
+      right:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(15,23,42,.85), rgba(15,23,42,.55));
+      border: 1px solid rgba(255,255,255,.10);
+      font-size:12px;
+      color: var(--muted);
+      backdrop-filter: blur(6px);
+    }
+
+    .prompt{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .prompt .en{
+      font-size:14px;
+      color: var(--muted);
+    }
+
+    .prompt .ask{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+
+    .spellingBox{
+      margin-top:12px;
+      padding:14px;
+      border-radius:18px;
+      background: rgba(2,6,23,.45);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .letterSlots{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .slot{
+      min-width: 28px;
+      height: 38px;
+      padding:0 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      font-weight:900;
+      font-size:18px;
+      text-transform: lowercase;
+    }
+
+    input[type="text"]{
+      width:100%;
+      padding:14px 14px;
+      border-radius:14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size:18px;
+      font-weight:800;
+      outline:none;
+      text-transform: lowercase;
+    }
+    input[type="text"]::placeholder{ color: rgba(203,213,225,.55); }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    .msg{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(15,23,42,.55);
+      color: var(--muted);
+      font-weight:700;
+      display:none;
+    }
+    .msg.good{ color: rgba(34,197,94,1); }
+    .msg.bad{ color: rgba(239,68,68,1); }
+
+    .side{
+      padding:16px;
+      background: rgba(2,6,23,.30);
+      border-left: 1px solid rgba(255,255,255,.10);
+    }
+
+    .side h2{margin:0 0 10px; font-size:14px; color: var(--muted);}
+
+    .miniCard{
+      padding:12px;
+      border-radius:18px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+    }
+
+    .kpi{display:flex; justify-content:space-between; gap:10px; align-items:baseline;}
+    .kpi .label{font-size:12px; color: var(--muted); font-weight:700;}
+    .kpi .value{font-size:18px; font-weight:900;}
+
+    .toggleRow{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+
+    .switch{
+      width:54px; height:30px;
+      border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      position:relative;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .switch .knob{
+      position:absolute; top:3px; left:3px;
+      width:24px; height:24px;
+      border-radius:999px;
+      background: rgba(255,255,255,.85);
+      transition:left .12s ease;
+    }
+    .switch.on{ background: rgba(34,197,94,.35); }
+    .switch.on .knob{ left: 27px; }
+
+    .footerNote{font-size:12px; color: rgba(203,213,225,.75); line-height:1.35;}
+
+    /* confetti */
+    .confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden;}
+    .confetti i{
+      position:absolute;
+      top:-20px;
+      width:10px; height:18px;
+      border-radius:3px;
+      opacity:.9;
+      animation: fall linear forwards;
+    }
+    @keyframes fall{to{ transform: translateY(110vh) rotate(720deg); opacity:.98; }}
+
+    /* overlay */
+    .overlay{
+      position:fixed; inset:0;
+      background: rgba(2,6,23,.72);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:16px;
+    }
+    .modal{
+      max-width:720px;
+      width:100%;
+      border-radius:24px;
+      padding:18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+    }
+    .modal h3{margin:0 0 10px; font-size:20px;}
+    .modal p{margin:0 0 12px; color: var(--muted); font-weight:700; line-height:1.35;}
+    .results{margin-top:12px; display:grid; gap:8px;}
+    .row{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius:16px;
+      background: rgba(2,6,23,.45);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      color: var(--muted);
+    }
+    .row strong{color: var(--text);}
+    .row .badge{font-weight:900;}
+    .row .badge.good{color: rgba(34,197,94,1);} 
+    .row .badge.bad{color: rgba(239,68,68,1);} 
+  </style>
+</head>
+<body>
+  <div class="confetti" id="confetti"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <h1>Spelling Game: Estonian Words</h1>
+          <p>Look at the picture. Type the Estonian word.</p>
+        </div>
+      </div>
+      <div class="topBtns">
+        <button class="ghost" id="helpBtn" type="button">Help</button>
+        <button class="primary" id="startBtn" type="button">Start (10)</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="grid">
+        <div class="panel">
+          <div class="statusRow">
+            <div class="pill" id="roundPill">Round: <strong id="roundText">0/10</strong></div>
+            <div class="dots" id="dots"></div>
+            <div class="pill">Score: <strong id="scoreText">0</strong></div>
+          </div>
+
+          <div class="imageWrap">
+            <img id="img" alt="" />
+            <div class="imageHint" id="imageHint">Press Start to play.</div>
+          </div>
+
+          <div class="prompt">
+            <div>
+              <div class="en" id="englishText">English: —</div>
+              <div class="ask" id="askText">Type the Estonian word</div>
+            </div>
+          </div>
+
+          <div class="spellingBox">
+            <input id="answer" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="type here…" disabled />
+            <div class="letterSlots" id="slots" aria-hidden="true"></div>
+            <div class="actions">
+              <button class="primary" id="checkBtn" type="button" disabled>Check</button>
+              <button class="ghost" id="skipBtn" type="button" disabled>Skip</button>
+              <button class="ghost" id="revealBtn" type="button" disabled>Reveal</button>
+              <button class="ghost" id="newRoundBtn" type="button" style="display:none;">New round</button>
+            </div>
+            <div class="msg" id="msg"></div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <h2>Settings</h2>
+          <div class="miniCard">
+            <div class="toggleRow">
+              <div>
+                <div style="font-weight:900;">Show English hint</div>
+                <div class="footerNote">Shows the English name under the picture.</div>
+              </div>
+              <div class="switch on" id="hintSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
+            </div>
+          </div>
+
+          <div class="miniCard">
+            <div class="toggleRow">
+              <div>
+                <div style="font-weight:900;">Auto-advance</div>
+                <div class="footerNote">After correct answer, move to next.</div>
+              </div>
+              <div class="switch on" id="autoSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
+            </div>
+          </div>
+
+          <div class="miniCard">
+            <div class="kpi">
+              <div class="label">Best score (saved)</div>
+              <div class="value" id="bestText">0</div>
+            </div>
+          </div>
+
+          <div class="miniCard">
+            <div class="footerNote">
+              Image path format used by this game:
+              <br><code>images/&lt;filename&gt;.jpg</code>
+              <br><br>
+              If your images are <code>.png</code> or have different names, edit the <code>WORDS</code> list near the top of the script.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>How to play</h3>
+      <p>Press <strong>Start</strong>. You get 10 pictures. Type the Estonian word and press <strong>Check</strong>. At the end you’ll see your score.</p>
+      <p>Tips: Use <strong>Reveal</strong> if stuck. <strong>Skip</strong> moves on (counts as wrong).</p>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+        <button class="primary" id="closeHelp" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="resultsOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 id="resultsTitle">Round complete</h3>
+      <p id="resultsSummary">—</p>
+      <div class="results" id="resultsList"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap;">
+        <button class="ghost" id="closeResults" type="button">Close</button>
+        <button class="primary" id="playAgain" type="button">Play again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === EDIT THIS LIST IF YOUR FILENAMES/EXTENSIONS DIFFER ===
+    // filename should match your image filename WITHOUT extension.
+    // Put your images in /images/ and use .jpg (default) or change ext.
+    const WORDS = [
+      { en: "Apple", et: "õun", filename: "Apple" },
+      { en: "Artichoke", et: "artišokk", filename: "Artichoke" },
+      { en: "Asparagus", et: "spargel", filename: "Asparagus" },
+      { en: "Aubergine", et: "baklažaan", filename: "Aubergine" },
+      { en: "Avocado", et: "avokaado", filename: "Avocado" },
+      { en: "Banana", et: "banaan", filename: "Banana" },
+      { en: "Bear", et: "karu", filename: "Bear" },
+      { en: "Blueberries", et: "mustikad", filename: "Blueberries" },
+      { en: "Book", et: "raamat", filename: "Book" },
+      { en: "Broccoli", et: "brokoli", filename: "Broccoli" },
+      { en: "Carrot", et: "porgand", filename: "Carrot" },
+      { en: "Cat", et: "kass", filename: "Cat" },
+      { en: "Cauliflower", et: "lillkapsas", filename: "Cauliflower" },
+      { en: "Celery", et: "seller", filename: "Celery" },
+      { en: "Chair", et: "tool", filename: "Chair" },
+      { en: "Cherries", et: "kirsid", filename: "Cherries" },
+      { en: "Clock", et: "kell", filename: "Clock" },
+      { en: "Coconut", et: "kookospähkel", filename: "Coconut" },
+      { en: "Comb", et: "kamm", filename: "Comb" },
+      { en: "Corn", et: "mais", filename: "Corn" },
+      { en: "Courgette", et: "suvikõrvits", filename: "Courgette" },
+      { en: "Cucumber", et: "kurk", filename: "Cucumber" },
+      { en: "Cup", et: "tass", filename: "Cup" },
+      { en: "Deer", et: "hirv", filename: "Deer" },
+      { en: "Dog", et: "koer", filename: "Dog" },
+      { en: "Dragonfruit", et: "draakonivili", filename: "Dragonfruit" },
+      { en: "Duck", et: "part", filename: "Duck" },
+      { en: "Elephant", et: "elevant", filename: "Elephant" },
+      { en: "Fish", et: "kala", filename: "Fish" },
+      { en: "Fork", et: "kahvel", filename: "Fork" },
+      { en: "Fox", et: "rebane", filename: "Fox" },
+      { en: "Frog", et: "konn", filename: "Frog" },
+      { en: "Garlic", et: "küüslauk", filename: "Garlic" },
+      { en: "Giraffe", et: "kaelkirjak", filename: "Giraffe" },
+      { en: "Glasses", et: "prillid", filename: "Glasses" },
+      { en: "Grapes", et: "viinamarjad", filename: "Grapes" },
+      { en: "Horse", et: "hobune", filename: "Horse" },
+      { en: "Kiwi", et: "kiivi", filename: "Kiwi" },
+      { en: "Lemon", et: "sidrun", filename: "Lemon" },
+      { en: "Lettuce", et: "salat", filename: "Lettuce" },
+      { en: "Lime", et: "laim", filename: "Lime" },
+      { en: "Lion", et: "lõvi", filename: "Lion" },
+      { en: "Mango", et: "mango", filename: "Mango" },
+      { en: "Monkey", et: "ahv", filename: "Monkey" },
+      { en: "Mouse", et: "hiir", filename: "Mouse" },
+      { en: "Mushroom", et: "seen", filename: "Mushroom" },
+      { en: "Onion", et: "sibul", filename: "Onion" },
+      { en: "Orange", et: "apelsin", filename: "Orange" },
+      { en: "Owl", et: "öökull", filename: "Owl" },
+      { en: "Panda", et: "panda", filename: "Panda" },
+      { en: "Peach", et: "virsik", filename: "Peach" },
+      { en: "Pear", et: "pirn", filename: "Pear" },
+      { en: "Peas", et: "herned", filename: "Peas" },
+      { en: "Pencil", et: "pliiats", filename: "Pencil" },
+      { en: "Penguin", et: "pingviin", filename: "Penguin" },
+      { en: "Pepper", et: "pipar", filename: "Pepper" },
+      { en: "Pineapple", et: "ananass", filename: "Pineapple" },
+      { en: "Plant", et: "taim", filename: "Plant" },
+      { en: "Pomegranate", et: "granaatõun", filename: "Pomegranate" },
+      { en: "Potato", et: "kartul", filename: "Potato" },
+      { en: "Pumpkin", et: "kõrvits", filename: "Pumpkin" },
+      { en: "Rabbit", et: "jänes", filename: "Rabbit" },
+      { en: "Raspberry", et: "vaarikas", filename: "Raspberry" },
+      { en: "Remote", et: "pult", filename: "Remote" },
+      { en: "Rubberduck", et: "kummipart", filename: "Rubberduck" },
+      { en: "Spinach", et: "spinat", filename: "Spinach" },
+      { en: "Spoon", et: "lusikas", filename: "Spoon" },
+      { en: "Strawberry", et: "maasikas", filename: "Strawberry" },
+      { en: "Tiger", et: "tiiger", filename: "Tiger" },
+      { en: "Toilet paper", et: "tualettpaber", filename: "Toilet paper" },
+      { en: "Tomato", et: "tomat", filename: "Tomato" },
+      { en: "Toothbrush", et: "hambaharja", filename: "Toothbrush" },
+      { en: "Towel", et: "rätik", filename: "Towel" },
+      { en: "Watermelon", et: "arbuus", filename: "Watermelon" }
+    ];
+
+    // If your images are PNGs, change to "png".
+    const IMAGE_EXT = "jpg";
+
+    // === GAME STATE ===
+    const ROUND_SIZE = 10;
+    let round = [];
+    let index = 0;
+    let score = 0;
+    let results = []; // {en, et, input, correct}
+    let answered = []; // true/false/null
+
+    // Settings
+    let showEnglishHint = true;
+    let autoAdvance = true;
+
+    const els = {
+      startBtn: document.getElementById('startBtn'),
+      helpBtn: document.getElementById('helpBtn'),
+      closeHelp: document.getElementById('closeHelp'),
+      overlay: document.getElementById('overlay'),
+
+      roundText: document.getElementById('roundText'),
+      scoreText: document.getElementById('scoreText'),
+      img: document.getElementById('img'),
+      imageHint: document.getElementById('imageHint'),
+      englishText: document.getElementById('englishText'),
+      askText: document.getElementById('askText'),
+      answer: document.getElementById('answer'),
+      slots: document.getElementById('slots'),
+      msg: document.getElementById('msg'),
+      checkBtn: document.getElementById('checkBtn'),
+      skipBtn: document.getElementById('skipBtn'),
+      revealBtn: document.getElementById('revealBtn'),
+      newRoundBtn: document.getElementById('newRoundBtn'),
+      dots: document.getElementById('dots'),
+      bestText: document.getElementById('bestText'),
+
+      hintSwitch: document.getElementById('hintSwitch'),
+      autoSwitch: document.getElementById('autoSwitch'),
+
+      resultsOverlay: document.getElementById('resultsOverlay'),
+      resultsTitle: document.getElementById('resultsTitle'),
+      resultsSummary: document.getElementById('resultsSummary'),
+      resultsList: document.getElementById('resultsList'),
+      closeResults: document.getElementById('closeResults'),
+      playAgain: document.getElementById('playAgain'),
+
+      confetti: document.getElementById('confetti')
+    };
+
+    // --- Utility ---
+    const norm = (s) => (s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/[’']/g, "'");
+
+    function shuffle(arr){
+      const a = arr.slice();
+      for (let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function setMsg(text, kind){
+      els.msg.style.display = text ? 'block' : 'none';
+      els.msg.classList.remove('good','bad');
+      if (kind) els.msg.classList.add(kind);
+      els.msg.textContent = text || "";
+    }
+
+    function setEnabled(on){
+      els.answer.disabled = !on;
+      els.checkBtn.disabled = !on;
+      els.skipBtn.disabled = !on;
+      els.revealBtn.disabled = !on;
+    }
+
+    function updateBest(){
+      const best = Number(localStorage.getItem('est_spelling_best') || 0);
+      els.bestText.textContent = String(best);
+    }
+
+    function updateDots(){
+      els.dots.innerHTML = '';
+      for (let i=0;i<ROUND_SIZE;i++){
+        const d = document.createElement('div');
+        d.className = 'dot';
+        if (i === index) d.classList.add('now');
+        if (answered[i] === true) d.classList.add('done');
+        if (answered[i] === false) d.classList.add('bad');
+        els.dots.appendChild(d);
+      }
+    }
+
+    function renderSlots(targetWord, input){
+      const t = targetWord;
+      const v = norm(input);
+      const chars = t.split('');
+      els.slots.innerHTML = '';
+      for (let i=0;i<chars.length;i++){
+        const c = chars[i];
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.textContent = (v[i] === c) ? c : (v[i] ? '•' : '');
+        els.slots.appendChild(slot);
+      }
+    }
+
+    function loadImage(word){
+      // Default: images/<filename>.jpg
+      const base = `images/${encodeURIComponent(word.filename)}.${IMAGE_EXT}`;
+      els.img.src = base;
+      els.img.alt = word.en;
+
+      // If image fails, try png automatically.
+      els.img.onerror = () => {
+        const alt = `images/${encodeURIComponent(word.filename)}.png`;
+        if (!els.img.dataset.triedPng){
+          els.img.dataset.triedPng = '1';
+          els.img.src = alt;
+        } else {
+          els.imageHint.textContent = `Image not found: ${word.filename}.${IMAGE_EXT} (or .png).`;
+        }
+      };
+      els.img.onload = () => { els.img.dataset.triedPng = ''; };
+    }
+
+    function startRound(){
+      round = shuffle(WORDS).slice(0, ROUND_SIZE);
+      index = 0;
+      score = 0;
+      results = [];
+      answered = Array(ROUND_SIZE).fill(null);
+
+      els.newRoundBtn.style.display = 'none';
+      setEnabled(true);
+      setMsg('', null);
+      els.startBtn.textContent = 'Restart (10)';
+
+      showCard();
+      updateHUD();
+      focusInput();
+    }
+
+    function showCard(){
+      const w = round[index];
+      if (!w) return;
+
+      els.imageHint.textContent = 'Spell it in Estonian.';
+      loadImage(w);
+
+      if (showEnglishHint){
+        els.englishText.textContent = `English: ${w.en}`;
+        els.englishText.style.display = 'block';
+      } else {
+        els.englishText.style.display = 'none';
+      }
+
+      els.answer.value = '';
+      renderSlots(norm(w.et), '');
+      els.askText.textContent = 'Type the Estonian word';
+      setMsg('', null);
+
+      updateDots();
+    }
+
+    function updateHUD(){
+      els.roundText.textContent = `${Math.min(index+1,ROUND_SIZE)}/${ROUND_SIZE}`;
+      els.scoreText.textContent = String(score);
+      updateDots();
+    }
+
+    function focusInput(){
+      // Mobile-friendly focusing
+      setTimeout(() => {
+        els.answer.focus({preventScroll:true});
+        els.answer.scrollIntoView({block:'center', behavior:'smooth'});
+      }, 80);
+    }
+
+    function check(){
+      const w = round[index];
+      const expected = norm(w.et);
+      const got = norm(els.answer.value);
+
+      const correct = (got === expected);
+      answered[index] = correct;
+      results.push({ en: w.en, et: w.et, input: els.answer.value.trim(), correct });
+
+      if (correct){
+        score += 1;
+        setMsg('Correct!', 'good');
+        popConfetti(24);
+        updateHUD();
+        if (autoAdvance){
+          setTimeout(next, 420);
+        }
+      } else {
+        setMsg(`Not quite. Correct: ${w.et}`, 'bad');
+        updateHUD();
+      }
+
+      renderSlots(expected, got);
+
+      // Save best
+      const best = Number(localStorage.getItem('est_spelling_best') || 0);
+      if (score > best){
+        localStorage.setItem('est_spelling_best', String(score));
+        updateBest();
+      }
+    }
+
+    function skip(){
+      const w = round[index];
+      answered[index] = false;
+      results.push({ en: w.en, et: w.et, input: '(skipped)', correct: false });
+      setMsg(`Skipped. Correct: ${w.et}`, 'bad');
+      updateHUD();
+      setTimeout(next, 350);
+    }
+
+    function reveal(){
+      const w = round[index];
+      els.answer.value = w.et;
+      renderSlots(norm(w.et), w.et);
+      setMsg('Revealed. Press Check if you want it to count as correct.', null);
+      focusInput();
+    }
+
+    function next(){
+      if (index >= ROUND_SIZE-1){
+        endRound();
+        return;
+      }
+      index += 1;
+      setMsg('', null);
+      showCard();
+      updateHUD();
+      focusInput();
+    }
+
+    function endRound(){
+      setEnabled(false);
+      els.newRoundBtn.style.display = 'inline-flex';
+
+      const pct = Math.round((score/ROUND_SIZE)*100);
+      els.resultsTitle.textContent = `Round complete: ${score}/${ROUND_SIZE}`;
+      els.resultsSummary.textContent = pct >= 80
+        ? 'Amazing.'
+        : pct >= 50
+          ? 'Nice work.'
+          : 'Good try.';
+
+      els.resultsList.innerHTML = '';
+      for (const r of results){
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `
+          <div><strong>${escapeHtml(r.en)}</strong> → ${escapeHtml(r.et)}<br><span style="opacity:.85">You: ${escapeHtml(r.input)}</span></div>
+          <div class="badge ${r.correct ? 'good':'bad'}">${r.correct ? '✓':'✗'}</div>
+        `;
+        els.resultsList.appendChild(div);
+      }
+
+      if (score >= 8) popConfetti(80);
+      els.resultsOverlay.style.display = 'flex';
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+
+    function popConfetti(n){
+      // No color picks: use random with CSS background set inline.
+      const colors = ['#60a5fa','#f59e0b','#22c55e','#a78bfa','#fb7185','#34d399'];
+      for (let i=0;i<n;i++){
+        const c = document.createElement('i');
+        const left = Math.random()*100;
+        const delay = Math.random()*0.25;
+        const dur = 0.9 + Math.random()*1.3;
+        const w = 6 + Math.random()*10;
+        const h = 10 + Math.random()*16;
+        c.style.left = left + 'vw';
+        c.style.animationDuration = dur + 's';
+        c.style.animationDelay = delay + 's';
+        c.style.width = w + 'px';
+        c.style.height = h + 'px';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        els.confetti.appendChild(c);
+        setTimeout(() => c.remove(), (dur+delay)*1000 + 200);
+      }
+    }
+
+    // --- UI wiring ---
+    function toggleSwitch(el, value){
+      el.classList.toggle('on', value);
+      el.setAttribute('aria-checked', String(value));
+    }
+
+    function bindSwitch(el, get, set){
+      const flip = () => {
+        const v = !get();
+        set(v);
+        toggleSwitch(el, v);
+        if (el === els.hintSwitch) showCard();
+      };
+      el.addEventListener('click', flip);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); flip(); }
+      });
+    }
+
+    els.startBtn.addEventListener('click', startRound);
+    els.newRoundBtn.addEventListener('click', startRound);
+    els.checkBtn.addEventListener('click', check);
+    els.skipBtn.addEventListener('click', skip);
+    els.revealBtn.addEventListener('click', reveal);
+
+    els.answer.addEventListener('input', () => {
+      const w = round[index];
+      if (!w) return;
+      renderSlots(norm(w.et), els.answer.value);
+    });
+
+    els.answer.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !els.answer.disabled){
+        e.preventDefault();
+        check();
+      }
+    });
+
+    els.helpBtn.addEventListener('click', () => { els.overlay.style.display = 'flex'; });
+    els.closeHelp.addEventListener('click', () => { els.overlay.style.display = 'none'; });
+    els.overlay.addEventListener('click', (e) => { if (e.target === els.overlay) els.overlay.style.display = 'none'; });
+
+    els.closeResults.addEventListener('click', () => { els.resultsOverlay.style.display = 'none'; });
+    els.playAgain.addEventListener('click', () => { els.resultsOverlay.style.display = 'none'; startRound(); });
+    els.resultsOverlay.addEventListener('click', (e) => { if (e.target === els.resultsOverlay) els.resultsOverlay.style.display = 'none'; });
+
+    bindSwitch(els.hintSwitch, () => showEnglishHint, (v) => showEnglishHint = v);
+    bindSwitch(els.autoSwitch, () => autoAdvance, (v) => autoAdvance = v);
+
+    // Init
+    setEnabled(false);
+    updateBest();
+    updateHUD();
+    updateDots();
+
+    // NOTE:
+    // One translation in the list is likely wrong: Toothbrush is normally "hambahari".
+    // The current value "hambaharja" is the genitive case and not what kids usually learn.
+    // Edit WORDS entry if needed.
+  </script>
+</body>
+</html>
