@@ -352,7 +352,7 @@
       </div>
       <div class="topBtns">
         <button class="ghost" id="helpBtn" type="button">Help</button>
-        <button class="primary" id="startBtn" type="button">Start (10)</button>
+        <button class="primary" id="startBtn" type="button">Choose game</button>
       </div>
     </header>
 
@@ -367,6 +367,13 @@
 
           <div class="imageWrap">
             <img id="img" alt="" />
+            <div id="mathWrap" style="display:none; width:100%; height:100%; padding:14px;">
+              <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px;">
+                <div id="mathExpr" style="font-size:54px; font-weight:1000; letter-spacing:.5px; text-align:center; line-height:1;">—</div>
+                <div id="mathCounters" style="width:100%; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;"></div>
+                <div class="footerNote" id="mathHint" style="text-align:center; opacity:.95;">Type the answer</div>
+              </div>
+            </div>
             <div class="imageHint" id="imageHint">Press Start to play.</div>
           </div>
 
@@ -392,13 +399,37 @@
 
         <aside class="side">
           <h2>Settings</h2>
-          <div class="miniCard">
+          <div class="miniCard" id="spellingSettings">
             <div class="toggleRow">
               <div>
                 <div style="font-weight:900;">Show English hint</div>
                 <div class="footerNote">Shows the English name under the picture.</div>
               </div>
               <div class="switch on" id="hintSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
+            </div>
+          </div>
+
+          <div class="miniCard" id="mathSettings" style="display:none;">
+            <div class="toggleRow" style="margin-bottom:10px;">
+              <div>
+                <div style="font-weight:900;">Addition</div>
+                <div class="footerNote">Include + questions.</div>
+              </div>
+              <div class="switch on" id="addSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
+            </div>
+            <div class="toggleRow" style="margin-bottom:10px;">
+              <div>
+                <div style="font-weight:900;">Subtraction</div>
+                <div class="footerNote">Include − questions (no negatives).</div>
+              </div>
+              <div class="switch on" id="subSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
+            </div>
+            <div class="toggleRow">
+              <div>
+                <div style="font-weight:900;">Show counters</div>
+                <div class="footerNote">Shows dots to help counting.</div>
+              </div>
+              <div class="switch on" id="counterSwitch" role="switch" aria-checked="true" tabindex="0"><div class="knob"></div></div>
             </div>
           </div>
 
@@ -419,12 +450,12 @@
             </div>
           </div>
 
-          <div class="miniCard">
+          <div class="miniCard" id="imageNote">
             <div class="footerNote">
               Image path format used by this game:
               <br><code>images/&lt;filename&gt;.jpg</code>
               <br><br>
-              If your images are <code>.png</code> or have different names, edit the <code>WORDS</code> list near the top of the script.
+              If your images are <code>.png</code> or have different names, edit the <code>WORDS</code> list in the script.
             </div>
           </div>
         </aside>
@@ -435,7 +466,7 @@
   <div class="overlay" id="overlay" role="dialog" aria-modal="true">
     <div class="modal">
       <h3>How to play</h3>
-      <p>Press <strong>Start</strong>. You get 10 pictures. Type the Estonian word and press <strong>Check</strong>. At the end you’ll see your score.</p>
+      <p>Choose a game. You get 10 questions. Type the answer and press <strong>Check</strong>. At the end you’ll see your score.</p>
       <p>Tips: Use <strong>Reveal</strong> if stuck. <strong>Skip</strong> moves on (counts as wrong).</p>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
         <button class="primary" id="closeHelp" type="button">OK</button>
@@ -443,7 +474,21 @@
     </div>
   </div>
 
-  <div class="overlay" id="resultsOverlay" role="dialog" aria-modal="true">
+  <div class="overlay" id="modeOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Choose a game</h3>
+      <p>Pick one.</p>
+      <div style="display:grid; gap:10px; grid-template-columns: 1fr; margin-top:10px;">
+        <button class="primary" id="modeSpelling" type="button" style="padding:16px; font-size:18px;">Spelling (Estonian)</button>
+        <button class="primary" id="modeMath" type="button" style="padding:16px; font-size:18px;">Maths (+ / −)</button>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+        <button class="ghost" id="closeMode" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="resultsOverlay" role="dialog" aria-modal="true"> role="dialog" aria-modal="true">
     <div class="modal">
       <h3 id="resultsTitle">Round complete</h3>
       <p id="resultsSummary">—</p>
@@ -456,9 +501,7 @@
   </div>
 
   <script>
-    // === EDIT THIS LIST IF YOUR FILENAMES/EXTENSIONS DIFFER ===
-    // filename should match your image filename WITHOUT extension.
-    // Put your images in /images/ and use .jpg (default) or change ext.
+    // === SPELLING WORDS (EDIT IF YOUR FILENAMES/EXTENSIONS DIFFER) ===
     const WORDS = [
       { en: "Apple", et: "õun", filename: "Apple" },
       { en: "Artichoke", et: "artišokk", filename: "Artichoke" },
@@ -468,7 +511,7 @@
       { en: "Banana", et: "banaan", filename: "Banana" },
       { en: "Bear", et: "karu", filename: "Bear" },
       { en: "Blueberries", et: "mustikad", filename: "Blueberries" },
-      { en: "Books", et: "raamatud", filename: "Book" },
+      { en: "Book", et: "raamatud", filename: "Book" },
       { en: "Broccoli", et: "brokoli", filename: "Broccoli" },
       { en: "Carrot", et: "porgand", filename: "Carrot" },
       { en: "Cat", et: "kass", filename: "Cat" },
@@ -515,7 +558,7 @@
       { en: "Peas", et: "herned", filename: "Peas" },
       { en: "Pencil", et: "pliiats", filename: "Pencil" },
       { en: "Penguin", et: "pingviin", filename: "Penguin" },
-      { en: "Pepper", et: "paprika", filename: "Pepper" },
+      { en: "Pepper", et: "pipar", filename: "Pepper" },
       { en: "Pineapple", et: "ananass", filename: "Pineapple" },
       { en: "Plant", et: "taim", filename: "Plant" },
       { en: "Pomegranate", et: "granaatõun", filename: "Pomegranate" },
@@ -536,20 +579,27 @@
       { en: "Watermelon", et: "arbuus", filename: "Watermelon" }
     ];
 
-    // If your images are PNGs, change to "png".
-    const IMAGE_EXT = "png";
-
-    // === GAME STATE ===
+    const IMAGE_EXT = "jpg";
     const ROUND_SIZE = 10;
+
+    let mode = null; // 'spelling' | 'math'
+
     let round = [];
     let index = 0;
     let score = 0;
-    let results = []; // {en, et, input, correct}
-    let answered = []; // true/false/null
+    let results = [];
+    let answered = [];
 
-    // Settings
-    let showEnglishHint = true;
+    // Shared settings
     let autoAdvance = true;
+
+    // Spelling settings
+    let showEnglishHint = true;
+
+    // Maths settings
+    let mathAdd = true;
+    let mathSub = true;
+    let showCounters = true;
 
     const els = {
       startBtn: document.getElementById('startBtn'),
@@ -557,10 +607,21 @@
       closeHelp: document.getElementById('closeHelp'),
       overlay: document.getElementById('overlay'),
 
+      modeOverlay: document.getElementById('modeOverlay'),
+      modeSpelling: document.getElementById('modeSpelling'),
+      modeMath: document.getElementById('modeMath'),
+      closeMode: document.getElementById('closeMode'),
+
       roundText: document.getElementById('roundText'),
       scoreText: document.getElementById('scoreText'),
+
       img: document.getElementById('img'),
       imageHint: document.getElementById('imageHint'),
+      mathWrap: document.getElementById('mathWrap'),
+      mathExpr: document.getElementById('mathExpr'),
+      mathCounters: document.getElementById('mathCounters'),
+      mathHint: document.getElementById('mathHint'),
+
       englishText: document.getElementById('englishText'),
       askText: document.getElementById('askText'),
       answer: document.getElementById('answer'),
@@ -573,8 +634,15 @@
       dots: document.getElementById('dots'),
       bestText: document.getElementById('bestText'),
 
+      spellingSettings: document.getElementById('spellingSettings'),
+      mathSettings: document.getElementById('mathSettings'),
+      imageNote: document.getElementById('imageNote'),
+
       hintSwitch: document.getElementById('hintSwitch'),
       autoSwitch: document.getElementById('autoSwitch'),
+      addSwitch: document.getElementById('addSwitch'),
+      subSwitch: document.getElementById('subSwitch'),
+      counterSwitch: document.getElementById('counterSwitch'),
 
       resultsOverlay: document.getElementById('resultsOverlay'),
       resultsTitle: document.getElementById('resultsTitle'),
@@ -586,12 +654,13 @@
       confetti: document.getElementById('confetti')
     };
 
-    // --- Utility ---
     const norm = (s) => (s || "")
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ")
       .replace(/[’']/g, "'");
+
+    const isInt = (s) => /^-?\d+$/.test(String(s).trim());
 
     function shuffle(arr){
       const a = arr.slice();
@@ -616,8 +685,14 @@
       els.revealBtn.disabled = !on;
     }
 
+    function bestKey(){
+      if (mode === 'spelling') return 'est_best_spelling';
+      if (mode === 'math') return 'est_best_math';
+      return 'est_best_unknown';
+    }
+
     function updateBest(){
-      const best = Number(localStorage.getItem('est_spelling_best') || 0);
+      const best = Number(localStorage.getItem(bestKey()) || 0);
       els.bestText.textContent = String(best);
     }
 
@@ -633,7 +708,7 @@
       }
     }
 
-    function renderSlots(targetWord, input){
+    function renderSlotsSpelling(targetWord, input){
       const t = targetWord;
       const v = norm(input);
       const chars = t.split('');
@@ -647,13 +722,23 @@
       }
     }
 
+    function renderSlotsMath(input){
+      const v = String(input || '').trim();
+      const max = Math.max(3, v.length || 0);
+      els.slots.innerHTML = '';
+      for (let i=0;i<max;i++){
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.textContent = v[i] ? v[i] : '';
+        els.slots.appendChild(slot);
+      }
+    }
+
     function loadImage(word){
-      // Default: images/<filename>.jpg
       const base = `images/${encodeURIComponent(word.filename)}.${IMAGE_EXT}`;
       els.img.src = base;
       els.img.alt = word.en;
 
-      // If image fails, try png automatically.
       els.img.onerror = () => {
         const alt = `images/${encodeURIComponent(word.filename)}.png`;
         if (!els.img.dataset.triedPng){
@@ -666,8 +751,54 @@
       els.img.onload = () => { els.img.dataset.triedPng = ''; };
     }
 
-    function startRound(){
-      round = shuffle(WORDS).slice(0, ROUND_SIZE);
+    function applyModeUI(){
+      const isSpelling = (mode === 'spelling');
+      els.img.style.display = isSpelling ? 'block' : 'none';
+      els.mathWrap.style.display = isSpelling ? 'none' : 'block';
+
+      els.spellingSettings.style.display = isSpelling ? 'block' : 'none';
+      els.mathSettings.style.display = isSpelling ? 'none' : 'block';
+      els.imageNote.style.display = isSpelling ? 'block' : 'none';
+
+      els.startBtn.textContent = isSpelling ? 'Spelling: restart (10)' : 'Maths: restart (10)';
+      updateBest();
+    }
+
+    function openMode(){
+      els.modeOverlay.style.display = 'flex';
+    }
+
+    function closeMode(){
+      els.modeOverlay.style.display = 'none';
+    }
+
+    function makeMathQuestion(){
+      const ops = [];
+      if (mathAdd) ops.push('+');
+      if (mathSub) ops.push('-');
+      const op = ops.length ? ops[Math.floor(Math.random()*ops.length)] : '+';
+
+      if (op === '+'){
+        const a = Math.floor(Math.random()*11);
+        const b = Math.floor(Math.random()*(11 - a));
+        return { kind:'math', op, a, b, expr: `${a} + ${b}`, answer: a + b };
+      }
+
+      const a = Math.floor(Math.random()*11);
+      const b = Math.floor(Math.random()*(a+1));
+      return { kind:'math', op, a, b, expr: `${a} − ${b}`, answer: a - b };
+    }
+
+    function startRound(nextMode){
+      mode = nextMode;
+      applyModeUI();
+
+      if (mode === 'spelling'){
+        round = shuffle(WORDS).slice(0, ROUND_SIZE).map(w => ({ kind:'spelling', ...w }));
+      } else {
+        round = Array.from({length: ROUND_SIZE}, () => makeMathQuestion());
+      }
+
       index = 0;
       score = 0;
       results = [];
@@ -676,7 +807,6 @@
       els.newRoundBtn.style.display = 'none';
       setEnabled(true);
       setMsg('', null);
-      els.startBtn.textContent = 'Restart (10)';
 
       showCard();
       updateHUD();
@@ -684,25 +814,81 @@
     }
 
     function showCard(){
-      const w = round[index];
-      if (!w) return;
+      const q = round[index];
+      if (!q) return;
 
-      els.imageHint.textContent = 'Spell it in Estonian.';
-      loadImage(w);
+      setMsg('', null);
+      els.answer.value = '';
 
-      if (showEnglishHint){
-        els.englishText.textContent = `English: ${w.en}`;
-        els.englishText.style.display = 'block';
+      if (q.kind === 'spelling'){
+        els.imageHint.textContent = 'Spell it in Estonian.';
+        loadImage(q);
+
+        if (showEnglishHint){
+          els.englishText.textContent = `English: ${q.en}`;
+          els.englishText.style.display = 'block';
+        } else {
+          els.englishText.style.display = 'none';
+        }
+
+        els.askText.textContent = 'Type the Estonian word';
+        renderSlotsSpelling(norm(q.et), '');
       } else {
+        els.imageHint.textContent = 'Solve it.';
         els.englishText.style.display = 'none';
+        els.askText.textContent = 'Type the answer';
+
+        els.mathExpr.textContent = q.expr;
+        els.mathHint.textContent = (q.op === '+') ? 'Add the numbers' : 'Take away';
+
+        renderCounters(q);
+        renderSlotsMath('');
       }
 
-      els.answer.value = '';
-      renderSlots(norm(w.et), '');
-      els.askText.textContent = 'Type the Estonian word';
-      setMsg('', null);
-
       updateDots();
+    }
+
+    function renderCounters(q){
+      els.mathCounters.innerHTML = '';
+      if (!showCounters) return;
+
+      const mkDot = () => {
+        const d = document.createElement('div');
+        d.style.width = '16px';
+        d.style.height = '16px';
+        d.style.borderRadius = '999px';
+        d.style.background = 'rgba(255,255,255,.22)';
+        d.style.border = '1px solid rgba(255,255,255,.18)';
+        return d;
+      };
+
+      const container = document.createElement('div');
+      container.style.display = 'flex';
+      container.style.gap = '8px';
+      container.style.flexWrap = 'wrap';
+      container.style.justifyContent = 'center';
+
+      if (q.op === '+'){
+        for (let i=0;i<q.a;i++) container.appendChild(mkDot());
+        const sep = document.createElement('div');
+        sep.textContent = '+';
+        sep.style.fontWeight = '1000';
+        sep.style.fontSize = '22px';
+        sep.style.margin = '0 6px';
+        container.appendChild(sep);
+        for (let i=0;i<q.b;i++) container.appendChild(mkDot());
+      } else {
+        for (let i=0;i<q.a;i++){
+          const d = mkDot();
+          if (i < q.b){
+            d.style.opacity = '.25';
+            d.style.transform = 'scale(.92)';
+          }
+          container.appendChild(d);
+        }
+      }
+
+      els.mathCounters.appendChild(container);
     }
 
     function updateHUD(){
@@ -712,59 +898,101 @@
     }
 
     function focusInput(){
-      // Mobile-friendly focusing
       setTimeout(() => {
         els.answer.focus({preventScroll:true});
         els.answer.scrollIntoView({block:'center', behavior:'smooth'});
       }, 80);
     }
 
-    function check(){
-      const w = round[index];
-      const expected = norm(w.et);
-      const got = norm(els.answer.value);
-
-      const correct = (got === expected);
-      answered[index] = correct;
-      results.push({ en: w.en, et: w.et, input: els.answer.value.trim(), correct });
-
-      if (correct){
-        score += 1;
-        setMsg('Correct!', 'good');
-        popConfetti(24);
-        updateHUD();
-        if (autoAdvance){
-          setTimeout(next, 420);
-        }
-      } else {
-        setMsg(`Not quite. Correct: ${w.et}`, 'bad');
-        updateHUD();
-      }
-
-      renderSlots(expected, got);
-
-      // Save best
-      const best = Number(localStorage.getItem('est_spelling_best') || 0);
+    function saveBest(){
+      const key = bestKey();
+      const best = Number(localStorage.getItem(key) || 0);
       if (score > best){
-        localStorage.setItem('est_spelling_best', String(score));
+        localStorage.setItem(key, String(score));
         updateBest();
       }
     }
 
+    function check(){
+      const q = round[index];
+      if (!q) return;
+
+      if (q.kind === 'spelling'){
+        const expected = norm(q.et);
+        const got = norm(els.answer.value);
+        const correct = (got === expected);
+
+        answered[index] = correct;
+        results.push({ kind:'spelling', en: q.en, et: q.et, input: els.answer.value.trim(), correct });
+
+        if (correct){
+          score += 1;
+          setMsg('Correct!', 'good');
+          popConfetti(24);
+          updateHUD();
+          if (autoAdvance) setTimeout(next, 420);
+        } else {
+          setMsg(`Not quite. Correct: ${q.et}`, 'bad');
+          updateHUD();
+        }
+
+        renderSlotsSpelling(expected, got);
+        saveBest();
+      } else {
+        const gotRaw = String(els.answer.value || '').trim();
+        const got = isInt(gotRaw) ? Number(gotRaw) : NaN;
+        const correct = (got === q.answer);
+
+        answered[index] = correct;
+        results.push({ kind:'math', expr: q.expr, answer: q.answer, input: gotRaw || '', correct });
+
+        if (correct){
+          score += 1;
+          setMsg('Correct!', 'good');
+          popConfetti(24);
+          updateHUD();
+          if (autoAdvance) setTimeout(next, 420);
+        } else {
+          setMsg(`Not quite. Correct: ${q.answer}`, 'bad');
+          updateHUD();
+        }
+
+        renderSlotsMath(gotRaw);
+        saveBest();
+      }
+    }
+
     function skip(){
-      const w = round[index];
+      const q = round[index];
+      if (!q) return;
+
       answered[index] = false;
-      results.push({ en: w.en, et: w.et, input: '(skipped)', correct: false });
-      setMsg(`Skipped. Correct: ${w.et}`, 'bad');
+
+      if (q.kind === 'spelling'){
+        results.push({ kind:'spelling', en: q.en, et: q.et, input: '(skipped)', correct: false });
+        setMsg(`Skipped. Correct: ${q.et}`, 'bad');
+      } else {
+        results.push({ kind:'math', expr: q.expr, answer: q.answer, input: '(skipped)', correct: false });
+        setMsg(`Skipped. Correct: ${q.answer}`, 'bad');
+      }
+
       updateHUD();
       setTimeout(next, 350);
     }
 
     function reveal(){
-      const w = round[index];
-      els.answer.value = w.et;
-      renderSlots(norm(w.et), w.et);
-      setMsg('Revealed. Press Check if you want it to count as correct.', null);
+      const q = round[index];
+      if (!q) return;
+
+      if (q.kind === 'spelling'){
+        els.answer.value = q.et;
+        renderSlotsSpelling(norm(q.et), q.et);
+        setMsg('Revealed. Press Check if you want it to count as correct.', null);
+      } else {
+        els.answer.value = String(q.answer);
+        renderSlotsMath(String(q.answer));
+        setMsg('Revealed. Press Check if you want it to count as correct.', null);
+      }
       focusInput();
     }
 
@@ -774,7 +1002,6 @@
         return;
       }
       index += 1;
-      setMsg('', null);
       showCard();
       updateHUD();
       focusInput();
@@ -786,20 +1013,26 @@
 
       const pct = Math.round((score/ROUND_SIZE)*100);
       els.resultsTitle.textContent = `Round complete: ${score}/${ROUND_SIZE}`;
-      els.resultsSummary.textContent = pct >= 80
-        ? 'Amazing.'
-        : pct >= 50
-          ? 'Nice work.'
-          : 'Good try.';
+      els.resultsSummary.textContent = pct >= 80 ? 'Amazing.' : (pct >= 50 ? 'Nice work.' : 'Good try.');
 
       els.resultsList.innerHTML = '';
+
       for (const r of results){
         const div = document.createElement('div');
         div.className = 'row';
-        div.innerHTML = `
-          <div><strong>${escapeHtml(r.en)}</strong> → ${escapeHtml(r.et)}<br><span style="opacity:.85">You: ${escapeHtml(r.input)}</span></div>
-          <div class="badge ${r.correct ? 'good':'bad'}">${r.correct ? '✓':'✗'}</div>
-        `;
+
+        if (r.kind === 'spelling'){
+          div.innerHTML = `
+            <div><strong>${escapeHtml(r.en)}</strong> → ${escapeHtml(r.et)}<br><span style="opacity:.85">You: ${escapeHtml(r.input)}</span></div>
+            <div class="badge ${r.correct ? 'good':'bad'}">${r.correct ? '✓':'✗'}</div>
+          `;
+        } else {
+          div.innerHTML = `
+            <div><strong>${escapeHtml(r.expr)}</strong> = ${escapeHtml(String(r.answer))}<br><span style="opacity:.85">You: ${escapeHtml(r.input)}</span></div>
+            <div class="badge ${r.correct ? 'good':'bad'}">${r.correct ? '✓':'✗'}</div>
+          `;
+        }
+
         els.resultsList.appendChild(div);
       }
 
@@ -812,12 +1045,11 @@
         .replace(/&/g,'&amp;')
         .replace(/</g,'&lt;')
         .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
+        .replace(/\"/g,'&quot;')
         .replace(/'/g,'&#039;');
     }
 
     function popConfetti(n){
-      // No color picks: use random with CSS background set inline.
       const colors = ['#60a5fa','#f59e0b','#22c55e','#a78bfa','#fb7185','#34d399'];
       for (let i=0;i<n;i++){
         const c = document.createElement('i');
@@ -837,18 +1069,17 @@
       }
     }
 
-    // --- UI wiring ---
     function toggleSwitch(el, value){
       el.classList.toggle('on', value);
       el.setAttribute('aria-checked', String(value));
     }
 
-    function bindSwitch(el, get, set){
+    function bindSwitch(el, get, set, onChange){
       const flip = () => {
         const v = !get();
         set(v);
         toggleSwitch(el, v);
-        if (el === els.hintSwitch) showCard();
+        if (onChange) onChange(v);
       };
       el.addEventListener('click', flip);
       el.addEventListener('keydown', (e) => {
@@ -856,16 +1087,25 @@
       });
     }
 
-    els.startBtn.addEventListener('click', startRound);
-    els.newRoundBtn.addEventListener('click', startRound);
+    els.startBtn.addEventListener('click', () => {
+      if (!mode) openMode();
+      else startRound(mode);
+    });
+
+    els.newRoundBtn.addEventListener('click', () => {
+      if (!mode) openMode();
+      else startRound(mode);
+    });
+
     els.checkBtn.addEventListener('click', check);
     els.skipBtn.addEventListener('click', skip);
     els.revealBtn.addEventListener('click', reveal);
 
     els.answer.addEventListener('input', () => {
-      const w = round[index];
-      if (!w) return;
-      renderSlots(norm(w.et), els.answer.value);
+      const q = round[index];
+      if (!q) return;
+      if (q.kind === 'spelling') renderSlotsSpelling(norm(q.et), els.answer.value);
+      else renderSlotsMath(els.answer.value);
     });
 
     els.answer.addEventListener('keydown', (e) => {
@@ -879,26 +1119,57 @@
     els.closeHelp.addEventListener('click', () => { els.overlay.style.display = 'none'; });
     els.overlay.addEventListener('click', (e) => { if (e.target === els.overlay) els.overlay.style.display = 'none'; });
 
+    els.modeSpelling.addEventListener('click', () => { closeMode(); startRound('spelling'); });
+    els.modeMath.addEventListener('click', () => { closeMode(); startRound('math'); });
+    els.closeMode.addEventListener('click', closeMode);
+    els.modeOverlay.addEventListener('click', (e) => { if (e.target === els.modeOverlay) closeMode(); });
+
     els.closeResults.addEventListener('click', () => { els.resultsOverlay.style.display = 'none'; });
-    els.playAgain.addEventListener('click', () => { els.resultsOverlay.style.display = 'none'; startRound(); });
+    els.playAgain.addEventListener('click', () => { els.resultsOverlay.style.display = 'none'; startRound(mode || 'spelling'); });
     els.resultsOverlay.addEventListener('click', (e) => { if (e.target === els.resultsOverlay) els.resultsOverlay.style.display = 'none'; });
 
-    bindSwitch(els.hintSwitch, () => showEnglishHint, (v) => showEnglishHint = v);
+    bindSwitch(els.hintSwitch, () => showEnglishHint, (v) => showEnglishHint = v, () => {
+      const q = round[index];
+      if (q && q.kind === 'spelling') showCard();
+    });
+
     bindSwitch(els.autoSwitch, () => autoAdvance, (v) => autoAdvance = v);
+
+    bindSwitch(els.addSwitch, () => mathAdd, (v) => {
+      mathAdd = v;
+      if (!mathAdd && !mathSub){
+        mathSub = true;
+        toggleSwitch(els.subSwitch, true);
+      }
+    });
+
+    bindSwitch(els.subSwitch, () => mathSub, (v) => {
+      mathSub = v;
+      if (!mathAdd && !mathSub){
+        mathAdd = true;
+        toggleSwitch(els.addSwitch, true);
+      }
+    });
+
+    bindSwitch(els.counterSwitch, () => showCounters, (v) => {
+      showCounters = v;
+      const q = round[index];
+      if (q && q.kind === 'math') renderCounters(q);
+    });
 
     // Init
     setEnabled(false);
-    updateBest();
-    updateHUD();
-    updateDots();
+    toggleSwitch(els.hintSwitch, showEnglishHint);
+    toggleSwitch(els.autoSwitch, autoAdvance);
+    toggleSwitch(els.addSwitch, mathAdd);
+    toggleSwitch(els.subSwitch, mathSub);
+    toggleSwitch(els.counterSwitch, showCounters);
 
-    // NOTE:
-    // One translation in the list is likely wrong: Toothbrush is normally "hambahari".
-    // The current value "hambaharja" is the genitive case and not what kids usually learn.
-    // Edit WORDS entry if needed.
+    updateDots();
+    els.roundText.textContent = `0/${ROUND_SIZE}`;
+    els.scoreText.textContent = '0';
+    els.askText.textContent = 'Choose a game';
+    els.imageHint.textContent = 'Press “Choose game”.';
   </script>
 </body>
 </html>
-
-
-
