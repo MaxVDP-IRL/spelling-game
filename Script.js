@@ -1,6 +1,7 @@
-// --- CONFIG: image list and translations ---
-// key = filename WITHOUT extension, exactly as in your folder
-// et  = correct Estonian word
+"use strict";
+
+// 1) ITEMS: key must match filename WITHOUT extension, including capitals/spaces.
+// 2) Images must be in /images and be .png
 
 const ITEMS = [
   { key: "Apple", et: "õun" },
@@ -80,43 +81,39 @@ const ITEMS = [
 ];
 
 const IMAGE_FOLDER = "images/";
-const IMAGE_EXTENSION = ".png"; // as in your screenshot
-
-// --- GAME STATE ---
-let playerName = "";
-let currentRoundItems = [];
-let currentIndex = 0;      // 0..9
-let score = 0;
+const IMAGE_EXTENSION = ".png";
 const QUESTIONS_PER_ROUND = 10;
 
-// --- DOM ELEMENTS ---
-const startScreen = document.getElementById("start-screen");
-const gameScreen = document.getElementById("game-screen");
-const endScreen = document.getElementById("end-screen");
+const $ = (id) => document.getElementById(id);
 
-const playerNameInput = document.getElementById("player-name");
-const startBtn = document.getElementById("start-btn");
+const el = {
+  start: $("screen-start"),
+  game: $("screen-game"),
+  end: $("screen-end"),
+  name: $("name"),
+  startErr: $("start-error"),
+  btnStart: $("btn-start"),
+  btnCheck: $("btn-check"),
+  btnNext: $("btn-next"),
+  btnRestart: $("btn-restart"),
+  lblName: $("lbl-name"),
+  lblProgress: $("lbl-progress"),
+  lblScore: $("lbl-score"),
+  img: $("img"),
+  blanks: $("blanks"),
+  answer: $("answer"),
+  feedback: $("feedback"),
+  endTitle: $("end-title"),
+  endScore: $("end-score"),
+};
 
-const playerLabel = document.getElementById("player-label");
-const progressLabel = document.getElementById("progress-label");
-const scoreLabel = document.getElementById("score-label");
+function fail(msg) {
+  el.startErr.textContent = msg;
+  console.error(msg);
+}
 
-const itemImage = document.getElementById("item-image");
-const blankDisplay = document.getElementById("blank-display");
-const answerInput = document.getElementById("answer-input");
-
-const submitBtn = document.getElementById("submit-btn");
-const nextBtn = document.getElementById("next-btn");
-const feedback = document.getElementById("feedback");
-
-const endMessage = document.getElementById("end-message");
-const finalScore = document.getElementById("final-score");
-const restartBtn = document.getElementById("restart-btn");
-
-// --- UTILITIES ---
-
-function shuffleArray(arr) {
-  const a = [...arr];
+function shuffle(arr) {
+  const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -124,109 +121,116 @@ function shuffleArray(arr) {
   return a;
 }
 
-function normalizeAnswer(str) {
-  return str.trim().toLowerCase();
+function norm(s) {
+  return (s || "").trim().toLowerCase();
 }
 
-// --- GAME FLOW ---
+let player = "";
+let round = [];
+let idx = 0;
+let score = 0;
 
-function startGame() {
-  playerName = playerNameInput.value.trim() || "Sõber";
+function show(screen) {
+  el.start.classList.add("hidden");
+  el.game.classList.add("hidden");
+  el.end.classList.add("hidden");
+  screen.classList.remove("hidden");
+}
 
+function imgUrl(key) {
+  // Encode spaces and special chars safely for URLs
+  const filename = encodeURIComponent(key) + IMAGE_EXTENSION;
+  return IMAGE_FOLDER + filename;
+}
+
+function setFeedback(text, ok) {
+  el.feedback.textContent = text;
+  el.feedback.classList.remove("ok", "bad");
+  if (ok === true) el.feedback.classList.add("ok");
+  if (ok === false) el.feedback.classList.add("bad");
+}
+
+function loadQ() {
+  const item = round[idx];
+  el.lblName.textContent = `Nimi: ${player}`;
+  el.lblProgress.textContent = `Küsimus: ${idx + 1}/${QUESTIONS_PER_ROUND}`;
+  el.lblScore.textContent = `Punktid: ${score}/${QUESTIONS_PER_ROUND}`;
+
+  const clean = item.et.replace(/[\s-]/g, "");
+  el.blanks.textContent = "_".repeat(clean.length);
+
+  el.img.src = imgUrl(item.key);
+  el.img.alt = item.et;
+
+  el.answer.value = "";
+  el.answer.disabled = false;
+  el.btnCheck.disabled = false;
+  el.btnNext.classList.add("hidden");
+  setFeedback("", null);
+
+  el.answer.focus();
+}
+
+function start() {
+  el.startErr.textContent = "";
+
+  if (!ITEMS.length) return fail("ITEMS on tühi.");
+  player = el.name.value.trim() || "Sõber";
   score = 0;
-  currentIndex = 0;
+  idx = 0;
 
-  const shuffled = shuffleArray(ITEMS);
-  currentRoundItems = shuffled.slice(0, QUESTIONS_PER_ROUND);
-
-  playerLabel.textContent = `Nimi: ${playerName}`;
-  scoreLabel.textContent = `Punktid: 0/${QUESTIONS_PER_ROUND}`;
-
-  startScreen.classList.add("hidden");
-  endScreen.classList.add("hidden");
-  gameScreen.classList.remove("hidden");
-
-  loadCurrentQuestion();
+  round = shuffle(ITEMS).slice(0, Math.min(QUESTIONS_PER_ROUND, ITEMS.length));
+  show(el.game);
+  loadQ();
 }
 
-function loadCurrentQuestion() {
-  const item = currentRoundItems[currentIndex];
-  const imagePath = IMAGE_FOLDER + item.key + IMAGE_EXTENSION;
+function check() {
+  const item = round[idx];
+  const ok = norm(el.answer.value) === norm(item.et);
 
-  itemImage.src = imagePath;
-  itemImage.alt = item.et;
-
-  progressLabel.textContent = `Küsimus: ${currentIndex + 1}/${QUESTIONS_PER_ROUND}`;
-  scoreLabel.textContent = `Punktid: ${score}/${QUESTIONS_PER_ROUND}`;
-
-  const cleanWord = item.et.replace(/\s|-/g, "");
-  blankDisplay.textContent = "_".repeat(cleanWord.length);
-
-  feedback.textContent = "";
-  feedback.classList.remove("correct", "incorrect");
-
-  answerInput.value = "";
-  answerInput.disabled = false;
-
-  submitBtn.disabled = false;
-  nextBtn.classList.add("hidden");
-
-  answerInput.focus();
-}
-
-function checkAnswer() {
-  const item = currentRoundItems[currentIndex];
-  const correct = normalizeAnswer(item.et);
-  const given = normalizeAnswer(answerInput.value);
-
-  const isCorrect = given === correct;
-
-  if (isCorrect) {
-    score++;
-    feedback.textContent = "Õige!";
-    feedback.classList.remove("incorrect");
-    feedback.classList.add("correct");
+  if (ok) {
+    score += 1;
+    setFeedback("Õige!", true);
   } else {
-    feedback.textContent = `Vale. Õige vastus on: "${item.et}".`;
-    feedback.classList.remove("correct");
-    feedback.classList.add("incorrect");
+    setFeedback(`Vale. Õige vastus on: "${item.et}".`, false);
   }
 
-  scoreLabel.textContent = `Punktid: ${score}/${QUESTIONS_PER_ROUND}`;
-
-  answerInput.disabled = true;
-  submitBtn.disabled = true;
-  nextBtn.classList.remove("hidden");
+  el.answer.disabled = true;
+  el.btnCheck.disabled = true;
+  el.btnNext.classList.remove("hidden");
 }
 
-function goToNextQuestion() {
-  currentIndex++;
-  if (currentIndex >= QUESTIONS_PER_ROUND) {
-    endGame();
-  } else {
-    loadCurrentQuestion();
+function next() {
+  idx += 1;
+  if (idx >= round.length) {
+    el.endTitle.textContent = `Tubli töö, ${player}!`;
+    el.endScore.textContent = `Sinu tulemus: ${score} / ${round.length}`;
+    show(el.end);
+    return;
   }
+  loadQ();
 }
 
-function endGame() {
-  gameScreen.classList.add("hidden");
-  endScreen.classList.remove("hidden");
-
-  endMessage.textContent = `Tubli töö, ${playerName}!`;
-  finalScore.textContent = `Sinu tulemus: ${score} / ${QUESTIONS_PER_ROUND}`;
+function restart() {
+  // keep same name; restart round
+  score = 0;
+  idx = 0;
+  round = shuffle(ITEMS).slice(0, Math.min(QUESTIONS_PER_ROUND, ITEMS.length));
+  show(el.game);
+  loadQ();
 }
 
-// --- EVENT LISTENERS ---
-
-startBtn.addEventListener("click", startGame);
-submitBtn.addEventListener("click", checkAnswer);
-nextBtn.addEventListener("click", goToNextQuestion);
-restartBtn.addEventListener("click", () => {
-  startGame();
+// Wire up
+el.btnStart.addEventListener("click", start);
+el.btnCheck.addEventListener("click", check);
+el.btnNext.addEventListener("click", next);
+el.btnRestart.addEventListener("click", () => { show(el.start); });
+el.answer.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !el.btnCheck.disabled) check();
 });
 
-answerInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !submitBtn.disabled) {
-    checkAnswer();
-  }
+// Image load error visibility
+el.img.addEventListener("error", () => {
+  setFeedback(`Pilt ei laadinud: ${el.img.src}`, false);
 });
+
