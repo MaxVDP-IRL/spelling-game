@@ -1,216 +1,296 @@
-"use strict";
-
-// Filenames: key must match filename WITHOUT extension, including capitals/spaces.
-const ITEMS = [
-  { key: "Apple", et: "õun" },
-  { key: "Artichoke", et: "artišokk" },
-  { key: "Asparagus", et: "spargel" },
-  { key: "Aubergine", et: "baklažaan" },
-  { key: "Avacado", et: "avokaado" },
-  { key: "Banana", et: "banaan" },
-  { key: "Bear", et: "karu" },
-  { key: "Blueberries", et: "mustikad" },
-  { key: "Book", et: "raamat" },
-  { key: "Broccoli", et: "brokoli" },
-  { key: "Carrot", et: "porgand" },
-  { key: "Cat", et: "kass" },
-  { key: "Cauliflower", et: "lillkapsas" },
-  { key: "Celery", et: "seller" },
-  { key: "Chair", et: "tool" },
-  { key: "Cherries", et: "kirsid" },
-  { key: "Clock", et: "kell" },
-  { key: "Coconut", et: "kookospähkel" },
-  { key: "Comb", et: "kamm" },
-  { key: "Corn", et: "mais" },
-  { key: "Courgette", et: "suvikõrvits" },
-  { key: "Cucumber", et: "kurk" },
-  { key: "Cup", et: "tass" },
-  { key: "Deer", et: "hirv" },
-  { key: "Dog", et: "koer" },
-  { key: "Dragonfruit", et: "draakonivili" },
-  { key: "Duck", et: "part" },
-  { key: "Elephant", et: "elevant" },
-  { key: "Fish", et: "kala" },
-  { key: "Fork", et: "kahvel" },
-  { key: "Fox", et: "rebane" },
-  { key: "Frog", et: "konn" },
-  { key: "Garlic", et: "küüslauk" },
-  { key: "Giraffe", et: "kaelkirjak" },
-  { key: "Glasses", et: "prillid" },
-  { key: "Grapes", et: "viinamarjad" },
-  { key: "Horse", et: "hobune" },
-  { key: "Kiwi", et: "kiivi" },
-  { key: "Lemon", et: "sidrun" },
-  { key: "Lettuce", et: "lehtsalat" },
-  { key: "Lime", et: "laim" },
-  { key: "Lion", et: "lõvi" },
-  { key: "Mango", et: "mango" },
-  { key: "Monkey", et: "ahv" },
-  { key: "Mouse", et: "hiir" },
-  { key: "Mushroom", et: "seen" },
-  { key: "Onion", et: "sibul" },
-  { key: "Orange", et: "apelsin" },
-  { key: "Owl", et: "öökull" },
-  { key: "Panda", et: "panda" },
-  { key: "Peach", et: "virsik" },
-  { key: "Pear", et: "pirn" },
-  { key: "Peas", et: "herned" },
-  { key: "Pencil", et: "pliiats" },
-  { key: "Penguin", et: "pingviin" },
-  { key: "Pepper", et: "paprika" },
-  { key: "Pineapple", et: "ananass" },
-  { key: "Plant", et: "taim" },
-  { key: "Pomegranate", et: "granaatõun" },
-  { key: "Potato", et: "kartul" },
-  { key: "Pumpkin", et: "kõrvits" },
-  { key: "Rabbit", et: "jänes" },
-  { key: "Raspberry", et: "vaarikas" },
-  { key: "Remote", et: "pult" },
-  { key: "Rubberduck", et: "kummipart" },
-  { key: "Spinach", et: "spinat" },
-  { key: "Spoon", et: "lusikas" },
-  { key: "Strawberry", et: "maasikas" },
-  { key: "Tiger", et: "tiiger" },
-  { key: "Toilet paper", et: "tualettpaber" },
-  { key: "Tomato", et: "tomat" },
-  { key: "Toothbrush", et: "hambahari" },
-  { key: "Towel", et: "rätik" },
-  { key: "Watermelon", et: "arbuus" },
-];
-
-const IMAGE_FOLDER = "images/";
-const IMAGE_EXTENSION = ".png";
-const QUESTIONS_PER_ROUND = 10;
-
-document.addEventListener("DOMContentLoaded", () => {
-  const $ = (id) => document.getElementById(id);
-
-  const el = {
-    start: $("screen-start"),
-    game: $("screen-game"),
-    end: $("screen-end"),
-    name: $("name"),
-    startErr: $("start-error"),
-    btnStart: $("btn-start"),
-    btnCheck: $("btn-check"),
-    btnNext: $("btn-next"),
-    btnRestart: $("btn-restart"),
-    lblName: $("lbl-name"),
-    lblProgress: $("lbl-progress"),
-    lblScore: $("lbl-score"),
-    img: $("img"),
-    blanks: $("blanks"),
-    letters: $("letters"),
-    feedback: $("feedback"),
-    endTitle: $("end-title"),
-    endScore: $("end-score"),
-  };
-
-  // Hard-fail early if markup mismatched
-  for (const [k, v] of Object.entries(el)) {
-    if (!v) {
-      console.error(`Missing element: ${k}`);
-      return;
-    }
-  }
-
-  function show(screen) {
-    el.start.classList.add("hidden");
-    el.game.classList.add("hidden");
-    el.end.classList.add("hidden");
-    screen.classList.remove("hidden");
-  }
-
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function norm(s) {
-    return (s || "").trim().toLowerCase();
-  }
-
-  function imgUrl(key) {
-    // Encodes spaces and special chars; keeps folder slash intact
-    return IMAGE_FOLDER + encodeURIComponent(key) + IMAGE_EXTENSION;
-  }
-
-  function setFeedback(text, ok) {
-    el.feedback.textContent = text;
-    el.feedback.classList.remove("ok", "bad");
-    if (ok === true) el.feedback.classList.add("ok");
-    if (ok === false) el.feedback.classList.add("bad");
-  }
-
-  function setStartError(text) {
-    el.startErr.textContent = text || "";
-  }
-
-  // Build per-letter inputs (supports Estonian letters)
-  function buildLetterInputs(word) {
-    el.letters.innerHTML = "";
-
-    const chars = Array.from(word); // handles õ/ä/ö/ü correctly
-    for (let i = 0; i < chars.length; i++) {
-      const inp = document.createElement("input");
-      inp.type = "text";
-      inp.inputMode = "text";
-      inp.autocomplete = "off";
-      inp.spellcheck = false;
-      inp.maxLength = 1;
-      inp.className = "letter";
-      inp.setAttribute("aria-label", `Täht ${i + 1}`);
-      el.letters.appendChild(inp);
-
-      inp.addEventListener("input", () => {
-        // keep only 1 char, auto-advance
-        inp.value = Array.from(inp.value).slice(0, 1).join("");
-        if (inp.value && i < chars.length - 1) {
-          el.letters.children[i + 1].focus();
-        }
-      });
-
-      inp.addEventListener("keydown", (e) => {
-        // backspace moves left if empty
-        if (e.key === "Backspace" && !inp.value && i > 0) {
-          el.letters.children[i - 1].focus();
-        }
-        // enter = check
-        if (e.key === "Enter") check();
-      });
-    }
-
-    // focus first
-    if (el.letters.firstChild) el.letters.firstChild.focus();
-  }
-
-  function readLetterInputs() {
-    const inputs = [...el.letters.querySelectorAll("input.letter")];
-    return inputs.map(i => i.value).join("");
-  }
-
-  function lockInputs(lock) {
-    const inputs = [...el.letters.querySelectorAll("input.letter")];
-    for (const i of inputs) i.disabled = lock;
-    el.btnCheck.disabled = lock;
-  }
-
-  // State
-  let player = "";
-  let round = [];
-  let idx = 0;
-  let score = 0;
-
-  function loadQ() {
-    const item = round[idx];
-
-    el.lblName.textContent = `Nimi: ${player}`;
-    el.lblProgress.textContent = `Küsimus: ${idx + 1}/${round.length}`;
-    el.lblScore.textContent = `Punktid: ${score}/${round.length}`;
-
-    // blanks shown as underscores
-    el.blanks.textContent = "_".repeat(Array.from(item.et.replace(/[\
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/script.js b/script.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..3ca2d506a4d92e1713015ae0e8fa41a320135b3e
+--- /dev/null
++++ b/script.js
+@@ -0,0 +1,286 @@
++"use strict";
++
++const ITEMS = [
++  "Apple",
++  "Artichoke",
++  "Asparagus",
++  "Aubergine",
++  "Avocado",
++  "Banana",
++  "Bear",
++  "Blueberries",
++  "Book",
++  "Broccoli",
++  "Carrot",
++  "Cat",
++  "Cauliflower",
++  "Celery",
++  "Chair",
++  "Cherries",
++  "Clock",
++  "Coconut",
++  "Comb",
++  "Corn",
++  "Courgette",
++  "Cucumber",
++  "Cup",
++  "Deer",
++  "Dog",
++  "Dragonfruit",
++  "Duck",
++  "Elephant",
++  "Fish",
++  "Fork",
++  "Fox",
++  "Frog",
++  "Garlic",
++  "Giraffe",
++  "Glasses",
++  "Grapes",
++  "Horse",
++  "Kiwi",
++  "Lemon",
++  "Lettuce",
++  "Lime",
++  "Lion",
++  "Mango",
++  "Monkey",
++  "Mouse",
++  "Mushroom",
++  "Onion",
++  "Orange",
++  "Owl",
++  "Panda",
++  "Peach",
++  "Pear",
++  "Peas",
++  "Pencil",
++  "Penguin",
++  "Pepper",
++  "Pineapple",
++  "Plant",
++  "Pomegranate",
++  "Potato",
++  "Pumpkin",
++  "Rabbit",
++  "Raspberry",
++  "Remote",
++  "Rubberduck",
++  "Spinach",
++  "Spoon",
++  "Strawberry",
++  "Tiger",
++  "Toilet paper",
++  "Tomato",
++  "Toothbrush",
++  "Towel",
++  "Watermelon",
++];
++
++const QUESTIONS_PER_ROUND = 10;
++const IMAGE_FOLDER = "images/";
++const IMAGE_EXT = ".png";
++
++const $ = (id) => document.getElementById(id);
++
++const ui = {
++  start: $("start-screen"),
++  game: $("game-screen"),
++  end: $("end-screen"),
++  nameInput: $("player-name"),
++  startError: $("start-error"),
++  startBtn: $("start-button"),
++  restartBtn: $("restart-button"),
++  statName: $("stat-name"),
++  statProgress: $("stat-progress"),
++  statScore: $("stat-score"),
++  progressBar: $("progress-bar"),
++  image: $("item-image"),
++  blanks: $("blanks"),
++  guess: $("guess-input"),
++  checkBtn: $("check-button"),
++  nextBtn: $("next-button"),
++  feedback: $("feedback"),
++  endName: $("end-name"),
++  endSummary: $("end-summary"),
++};
++
++let state = {
++  player: "",
++  round: [],
++  index: 0,
++  score: 0,
++  locked: false,
++};
++
++function shuffle(arr) {
++  const copy = arr.slice();
++  for (let i = copy.length - 1; i > 0; i--) {
++    const j = Math.floor(Math.random() * (i + 1));
++    [copy[i], copy[j]] = [copy[j], copy[i]];
++  }
++  return copy;
++}
++
++function cleanAnswer(text) {
++  return (text || "")
++    .trim()
++    .toLowerCase()
++    .replace(/[^a-z]/g, "");
++}
++
++function makeBlankBoxes(word) {
++  ui.blanks.innerHTML = "";
++  const letters = word.replace(/\s+/g, "");
++  for (let i = 0; i < letters.length; i++) {
++    const box = document.createElement("span");
++    box.className = "blank-box";
++    box.textContent = "_";
++    ui.blanks.appendChild(box);
++  }
++}
++
++function setFeedback(message, mood) {
++  ui.feedback.textContent = message;
++  ui.feedback.classList.remove("ok", "bad");
++  if (mood === "ok") ui.feedback.classList.add("ok");
++  if (mood === "bad") ui.feedback.classList.add("bad");
++}
++
++function showScreen(screen) {
++  ui.start.hidden = true;
++  ui.game.hidden = true;
++  ui.end.hidden = true;
++  screen.hidden = false;
++}
++
++function setLocked(locked) {
++  state.locked = locked;
++  ui.guess.disabled = locked;
++  ui.checkBtn.disabled = locked;
++  ui.nextBtn.disabled = !locked;
++}
++
++function loadQuestion() {
++  const item = state.round[state.index];
++  const displayIndex = state.index + 1;
++  ui.statName.textContent = `Player: ${state.player}`;
++  ui.statProgress.textContent = `Question ${displayIndex} / ${QUESTIONS_PER_ROUND}`;
++  ui.statScore.textContent = `Score: ${state.score}`;
++  ui.progressBar.style.width = `${(displayIndex - 1) / QUESTIONS_PER_ROUND * 100}%`;
++
++  const imgName = encodeURIComponent(item) + IMAGE_EXT;
++  ui.image.src = IMAGE_FOLDER + imgName;
++  ui.image.alt = item;
++
++  makeBlankBoxes(item);
++  ui.guess.value = "";
++  ui.guess.focus();
++  ui.nextBtn.textContent = "Next picture";
++  setFeedback("", null);
++  setLocked(false);
++}
++
++function startGame() {
++  const name = ui.nameInput.value.trim();
++  if (!name) {
++    ui.startError.textContent = "Please type your name to begin.";
++    ui.nameInput.focus();
++    return;
++  }
++
++  ui.startError.textContent = "";
++  state = {
++    player: name,
++    round: shuffle(ITEMS).slice(0, QUESTIONS_PER_ROUND),
++    index: 0,
++    score: 0,
++    locked: false,
++  };
++
++  showScreen(ui.game);
++  loadQuestion();
++}
++
++function finishGame() {
++  const perfect = state.score === QUESTIONS_PER_ROUND;
++  const praise = perfect
++    ? "You nailed every word!"
++    : state.score >= QUESTIONS_PER_ROUND * 0.7
++      ? "Amazing spelling!"
++      : "Great effort—keep practicing!";
++
++  ui.endName.textContent = state.player;
++  ui.endSummary.textContent = `${state.score} out of ${QUESTIONS_PER_ROUND} correct. ${praise}`;
++  ui.progressBar.style.width = "100%";
++  showScreen(ui.end);
++}
++
++function checkAnswer() {
++  if (state.locked) return;
++  const item = state.round[state.index];
++  const expected = cleanAnswer(item);
++  const guess = cleanAnswer(ui.guess.value);
++
++  if (!guess) {
++    setFeedback("Type your answer before checking.", "bad");
++    ui.guess.focus();
++    return;
++  }
++
++  const correct = guess === expected;
++  if (correct) state.score += 1;
++
++  setFeedback(
++    correct ? "Hooray! That's correct." : `Oops! The word was "${item}".`,
++    correct ? "ok" : "bad"
++  );
++
++  setLocked(true);
++  ui.statScore.textContent = `Score: ${state.score}`;
++
++  const atLastQuestion = state.index === QUESTIONS_PER_ROUND - 1;
++  if (atLastQuestion) {
++    ui.nextBtn.textContent = "See my score";
++  } else {
++    ui.nextBtn.textContent = "Next picture";
++  }
++}
++
++function nextQuestion() {
++  if (!state.locked) return;
++  const atLastQuestion = state.index === QUESTIONS_PER_ROUND - 1;
++  if (atLastQuestion) {
++    finishGame();
++    return;
++  }
++  state.index += 1;
++  loadQuestion();
++}
++
++function restart() {
++  ui.nameInput.value = "";
++  ui.startError.textContent = "";
++  ui.progressBar.style.width = "0%";
++  showScreen(ui.start);
++  ui.nameInput.focus();
++}
++
++function wireEvents() {
++  ui.startBtn.addEventListener("click", startGame);
++  ui.restartBtn.addEventListener("click", restart);
++  ui.checkBtn.addEventListener("click", checkAnswer);
++  ui.nextBtn.addEventListener("click", nextQuestion);
++
++  ui.nameInput.addEventListener("keydown", (e) => {
++    if (e.key === "Enter") startGame();
++  });
++
++  ui.guess.addEventListener("keydown", (e) => {
++    if (e.key === "Enter") checkAnswer();
++  });
++}
++
++window.addEventListener("DOMContentLoaded", () => {
++  wireEvents();
++});
+ 
+EOF
+)
