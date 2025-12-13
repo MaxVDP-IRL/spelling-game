@@ -1,54 +1,126 @@
-<!doctype html>
-<html lang="et">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Õppime õigekirja</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <main class="wrap">
-
-    <section id="screen-start" class="card">
-      <h1>Õppime õigekirja</h1>
-      <label for="name">Sisesta oma nimi:</label>
-      <input id="name" type="text" placeholder="Nimi" />
-      <button id="btn-start" type="button">Alusta mängu</button>
-      <div id="start-error" class="error" aria-live="polite"></div>
-    </section>
-
-    <section id="screen-game" class="card hidden">
-      <div class="top">
-        <div id="lbl-name"></div>
-        <div id="lbl-progress"></div>
-        <div id="lbl-score"></div>
-      </div>
-
-      <div class="imgbox">
-        <img id="img" alt="" />
-      </div>
-
-      <div id="blanks" class="blanks"></div>
-
-      <!-- Per-letter inputs get injected here -->
-      <div id="letters" class="letters" aria-label="Sisesta tähed"></div>
-
-      <div class="row">
-        <button id="btn-check" type="button">Kontrolli</button>
-        <button id="btn-next" type="button" class="hidden">Järgmine</button>
-      </div>
-
-      <div id="feedback" class="feedback" aria-live="polite"></div>
-    </section>
-
-    <section id="screen-end" class="card hidden">
-      <h2 id="end-title"></h2>
-      <p id="end-score"></p>
-      <button id="btn-restart" type="button">Mängi uuesti</button>
-    </section>
-
-  </main>
-
-  <script src="script.js"></script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/index.html b/index.html
+index 2d8f4e3572a31e67f3aeb78acb155a6c103039b6..b4eb1b261fb27aa71971b5df1ea4bbb058531668 100644
+--- a/index.html
++++ b/index.html
+@@ -1,54 +1,63 @@
+-<!doctype html>
+-<html lang="et">
+-<head>
+-  <meta charset="utf-8" />
+-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+-  <title>Õppime õigekirja</title>
+-  <link rel="stylesheet" href="style.css" />
+-</head>
+-<body>
+-  <main class="wrap">
+-
+-    <section id="screen-start" class="card">
+-      <h1>Õppime õigekirja</h1>
+-      <label for="name">Sisesta oma nimi:</label>
+-      <input id="name" type="text" placeholder="Nimi" />
+-      <button id="btn-start" type="button">Alusta mängu</button>
+-      <div id="start-error" class="error" aria-live="polite"></div>
+-    </section>
+-
+-    <section id="screen-game" class="card hidden">
+-      <div class="top">
+-        <div id="lbl-name"></div>
+-        <div id="lbl-progress"></div>
+-        <div id="lbl-score"></div>
+-      </div>
+-
+-      <div class="imgbox">
+-        <img id="img" alt="" />
+-      </div>
+-
+-      <div id="blanks" class="blanks"></div>
+-
+-      <!-- Per-letter inputs get injected here -->
+-      <div id="letters" class="letters" aria-label="Sisesta tähed"></div>
+-
+-      <div class="row">
+-        <button id="btn-check" type="button">Kontrolli</button>
+-        <button id="btn-next" type="button" class="hidden">Järgmine</button>
+-      </div>
+-
+-      <div id="feedback" class="feedback" aria-live="polite"></div>
+-    </section>
+-
+-    <section id="screen-end" class="card hidden">
+-      <h2 id="end-title"></h2>
+-      <p id="end-score"></p>
+-      <button id="btn-restart" type="button">Mängi uuesti</button>
+-    </section>
+-
+-  </main>
+-
+-  <script src="script.js"></script>
+-</body>
+-</html>
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8" />
++  <meta name="viewport" content="width=device-width, initial-scale=1" />
++  <title>Sunny Spelling Adventure</title>
++  <link rel="stylesheet" href="style.css" />
++</head>
++<body>
++  <main class="app">
++    <section id="start-screen" class="panel show">
++      <div class="sparkles" aria-hidden="true">
++        <span>★</span><span>☆</span><span>★</span>
++      </div>
++      <h1>Sunny Spelling Adventure</h1>
++      <p class="tagline">A cozy spelling game for little explorers</p>
++      <label for="player-name">What's your name?</label>
++      <input id="player-name" type="text" placeholder="Type your name" autocomplete="off" />
++      <button id="start-button" type="button">Start spelling!</button>
++      <div id="start-error" class="error" aria-live="polite"></div>
++    </section>
++
++    <section id="game-screen" class="panel" hidden>
++      <div class="stats">
++        <div class="stat" id="stat-name">Player: –</div>
++        <div class="stat" id="stat-progress">Question 0 / 10</div>
++        <div class="stat" id="stat-score">Score: 0</div>
++      </div>
++      <div class="meter" aria-hidden="true">
++        <div id="progress-bar" class="meter-fill"></div>
++      </div>
++
++      <div class="card image-card">
++        <img id="item-image" src="" alt="" />
++      </div>
++
++      <div class="prompt">
++        <p class="instruction">Look at the picture and spell the word:</p>
++        <div id="blanks" class="blanks" aria-hidden="true"></div>
++        <input id="guess-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Type the word here" />
++      </div>
++
++      <div class="actions">
++        <button id="check-button" type="button">Check my word</button>
++        <button id="next-button" type="button" class="ghost" disabled>Next picture</button>
++      </div>
++
++      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
++    </section>
++
++    <section id="end-screen" class="panel" hidden>
++      <div class="sparkles" aria-hidden="true">
++        <span>★</span><span>☆</span><span>★</span>
++      </div>
++      <h2>Great job, <span id="end-name"></span>!</h2>
++      <p id="end-summary" class="summary"></p>
++      <button id="restart-button" type="button">Play again</button>
++    </section>
++  </main>
++
++  <script src="script.js"></script>
++</body>
++</html>
+ 
+EOF
+)
