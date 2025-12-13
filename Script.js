@@ -1,8 +1,6 @@
 "use strict";
 
-// 1) ITEMS: key must match filename WITHOUT extension, including capitals/spaces.
-// 2) Images must be in /images and be .png
-
+// Filenames: key must match filename WITHOUT extension, including capitals/spaces.
 const ITEMS = [
   { key: "Apple", et: "õun" },
   { key: "Artichoke", et: "artišokk" },
@@ -84,153 +82,135 @@ const IMAGE_FOLDER = "images/";
 const IMAGE_EXTENSION = ".png";
 const QUESTIONS_PER_ROUND = 10;
 
-const $ = (id) => document.getElementById(id);
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
 
-const el = {
-  start: $("screen-start"),
-  game: $("screen-game"),
-  end: $("screen-end"),
-  name: $("name"),
-  startErr: $("start-error"),
-  btnStart: $("btn-start"),
-  btnCheck: $("btn-check"),
-  btnNext: $("btn-next"),
-  btnRestart: $("btn-restart"),
-  lblName: $("lbl-name"),
-  lblProgress: $("lbl-progress"),
-  lblScore: $("lbl-score"),
-  img: $("img"),
-  blanks: $("blanks"),
-  answer: $("answer"),
-  feedback: $("feedback"),
-  endTitle: $("end-title"),
-  endScore: $("end-score"),
-};
+  const el = {
+    start: $("screen-start"),
+    game: $("screen-game"),
+    end: $("screen-end"),
+    name: $("name"),
+    startErr: $("start-error"),
+    btnStart: $("btn-start"),
+    btnCheck: $("btn-check"),
+    btnNext: $("btn-next"),
+    btnRestart: $("btn-restart"),
+    lblName: $("lbl-name"),
+    lblProgress: $("lbl-progress"),
+    lblScore: $("lbl-score"),
+    img: $("img"),
+    blanks: $("blanks"),
+    letters: $("letters"),
+    feedback: $("feedback"),
+    endTitle: $("end-title"),
+    endScore: $("end-score"),
+  };
 
-function fail(msg) {
-  el.startErr.textContent = msg;
-  console.error(msg);
-}
-
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function norm(s) {
-  return (s || "").trim().toLowerCase();
-}
-
-let player = "";
-let round = [];
-let idx = 0;
-let score = 0;
-
-function show(screen) {
-  el.start.classList.add("hidden");
-  el.game.classList.add("hidden");
-  el.end.classList.add("hidden");
-  screen.classList.remove("hidden");
-}
-
-function imgUrl(key) {
-  // Encode spaces and special chars safely for URLs
-  const filename = encodeURIComponent(key) + IMAGE_EXTENSION;
-  return IMAGE_FOLDER + filename;
-}
-
-function setFeedback(text, ok) {
-  el.feedback.textContent = text;
-  el.feedback.classList.remove("ok", "bad");
-  if (ok === true) el.feedback.classList.add("ok");
-  if (ok === false) el.feedback.classList.add("bad");
-}
-
-function loadQ() {
-  const item = round[idx];
-  el.lblName.textContent = `Nimi: ${player}`;
-  el.lblProgress.textContent = `Küsimus: ${idx + 1}/${QUESTIONS_PER_ROUND}`;
-  el.lblScore.textContent = `Punktid: ${score}/${QUESTIONS_PER_ROUND}`;
-
-  const clean = item.et.replace(/[\s-]/g, "");
-  el.blanks.textContent = "_".repeat(clean.length);
-
-  el.img.src = imgUrl(item.key);
-  el.img.alt = item.et;
-
-  el.answer.value = "";
-  el.answer.disabled = false;
-  el.btnCheck.disabled = false;
-  el.btnNext.classList.add("hidden");
-  setFeedback("", null);
-
-  el.answer.focus();
-}
-
-function start() {
-  el.startErr.textContent = "";
-
-  if (!ITEMS.length) return fail("ITEMS on tühi.");
-  player = el.name.value.trim() || "Sõber";
-  score = 0;
-  idx = 0;
-
-  round = shuffle(ITEMS).slice(0, Math.min(QUESTIONS_PER_ROUND, ITEMS.length));
-  show(el.game);
-  loadQ();
-}
-
-function check() {
-  const item = round[idx];
-  const ok = norm(el.answer.value) === norm(item.et);
-
-  if (ok) {
-    score += 1;
-    setFeedback("Õige!", true);
-  } else {
-    setFeedback(`Vale. Õige vastus on: "${item.et}".`, false);
+  // Hard-fail early if markup mismatched
+  for (const [k, v] of Object.entries(el)) {
+    if (!v) {
+      console.error(`Missing element: ${k}`);
+      return;
+    }
   }
 
-  el.answer.disabled = true;
-  el.btnCheck.disabled = true;
-  el.btnNext.classList.remove("hidden");
-}
-
-function next() {
-  idx += 1;
-  if (idx >= round.length) {
-    el.endTitle.textContent = `Tubli töö, ${player}!`;
-    el.endScore.textContent = `Sinu tulemus: ${score} / ${round.length}`;
-    show(el.end);
-    return;
+  function show(screen) {
+    el.start.classList.add("hidden");
+    el.game.classList.add("hidden");
+    el.end.classList.add("hidden");
+    screen.classList.remove("hidden");
   }
-  loadQ();
-}
 
-function restart() {
-  // keep same name; restart round
-  score = 0;
-  idx = 0;
-  round = shuffle(ITEMS).slice(0, Math.min(QUESTIONS_PER_ROUND, ITEMS.length));
-  show(el.game);
-  loadQ();
-}
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
-// Wire up
-el.btnStart.addEventListener("click", start);
-el.btnCheck.addEventListener("click", check);
-el.btnNext.addEventListener("click", next);
-el.btnRestart.addEventListener("click", () => { show(el.start); });
-el.answer.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !el.btnCheck.disabled) check();
-});
+  function norm(s) {
+    return (s || "").trim().toLowerCase();
+  }
 
-// Image load error visibility
-el.img.addEventListener("error", () => {
-  setFeedback(`Pilt ei laadinud: ${el.img.src}`, false);
-});
+  function imgUrl(key) {
+    // Encodes spaces and special chars; keeps folder slash intact
+    return IMAGE_FOLDER + encodeURIComponent(key) + IMAGE_EXTENSION;
+  }
 
+  function setFeedback(text, ok) {
+    el.feedback.textContent = text;
+    el.feedback.classList.remove("ok", "bad");
+    if (ok === true) el.feedback.classList.add("ok");
+    if (ok === false) el.feedback.classList.add("bad");
+  }
+
+  function setStartError(text) {
+    el.startErr.textContent = text || "";
+  }
+
+  // Build per-letter inputs (supports Estonian letters)
+  function buildLetterInputs(word) {
+    el.letters.innerHTML = "";
+
+    const chars = Array.from(word); // handles õ/ä/ö/ü correctly
+    for (let i = 0; i < chars.length; i++) {
+      const inp = document.createElement("input");
+      inp.type = "text";
+      inp.inputMode = "text";
+      inp.autocomplete = "off";
+      inp.spellcheck = false;
+      inp.maxLength = 1;
+      inp.className = "letter";
+      inp.setAttribute("aria-label", `Täht ${i + 1}`);
+      el.letters.appendChild(inp);
+
+      inp.addEventListener("input", () => {
+        // keep only 1 char, auto-advance
+        inp.value = Array.from(inp.value).slice(0, 1).join("");
+        if (inp.value && i < chars.length - 1) {
+          el.letters.children[i + 1].focus();
+        }
+      });
+
+      inp.addEventListener("keydown", (e) => {
+        // backspace moves left if empty
+        if (e.key === "Backspace" && !inp.value && i > 0) {
+          el.letters.children[i - 1].focus();
+        }
+        // enter = check
+        if (e.key === "Enter") check();
+      });
+    }
+
+    // focus first
+    if (el.letters.firstChild) el.letters.firstChild.focus();
+  }
+
+  function readLetterInputs() {
+    const inputs = [...el.letters.querySelectorAll("input.letter")];
+    return inputs.map(i => i.value).join("");
+  }
+
+  function lockInputs(lock) {
+    const inputs = [...el.letters.querySelectorAll("input.letter")];
+    for (const i of inputs) i.disabled = lock;
+    el.btnCheck.disabled = lock;
+  }
+
+  // State
+  let player = "";
+  let round = [];
+  let idx = 0;
+  let score = 0;
+
+  function loadQ() {
+    const item = round[idx];
+
+    el.lblName.textContent = `Nimi: ${player}`;
+    el.lblProgress.textContent = `Küsimus: ${idx + 1}/${round.length}`;
+    el.lblScore.textContent = `Punktid: ${score}/${round.length}`;
+
+    // blanks shown as underscores
+    el.blanks.textContent = "_".repeat(Array.from(item.et.replace(/[\
