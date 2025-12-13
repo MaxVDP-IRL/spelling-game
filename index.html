@@ -1,59 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="et">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Õppime õigekirja</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
+  <main class="wrap">
 
-    <!-- Start screen -->
-    <section id="start-screen">
+    <section id="screen-start" class="card">
       <h1>Õppime õigekirja</h1>
-      <label for="player-name">Sisesta oma nimi:</label>
-      <input type="text" id="player-name" placeholder="Nimi">
-      <button id="start-btn">Alusta mängu</button>
+      <label for="name">Sisesta oma nimi:</label>
+      <input id="name" type="text" placeholder="Nimi" />
+      <button id="btn-start" type="button">Alusta mängu</button>
+      <div id="start-error" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- Game screen -->
-    <section id="game-screen" class="hidden">
-      <div id="top-bar">
-        <div id="player-label"></div>
-        <div id="progress-label"></div>
-        <div id="score-label"></div>
+    <section id="screen-game" class="card hidden">
+      <div class="top">
+        <div id="lbl-name"></div>
+        <div id="lbl-progress"></div>
+        <div id="lbl-score"></div>
       </div>
 
-      <div id="image-wrapper">
-        <img id="item-image" src="" alt="">
+      <div class="imgbox">
+        <img id="img" alt="" />
       </div>
 
-      <div id="word-area">
-        <div id="blank-display"></div>
-        <input 
-          type="text" 
-          id="answer-input" 
-          autocomplete="off" 
-          placeholder="Kirjuta sõna siia">
+      <div class="blanks" id="blanks"></div>
+
+      <input id="answer" type="text" autocomplete="off" placeholder="Kirjuta sõna siia" />
+
+      <div class="row">
+        <button id="btn-check" type="button">Kontrolli</button>
+        <button id="btn-next" type="button" class="hidden">Järgmine</button>
       </div>
 
-      <div id="controls">
-        <button id="submit-btn">Kontrolli</button>
-        <button id="next-btn" class="hidden">Järgmine</button>
-      </div>
-
-      <div id="feedback"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
     </section>
 
-    <!-- End screen -->
-    <section id="end-screen" class="hidden">
-      <h2 id="end-message"></h2>
-      <p id="final-score"></p>
-      <button id="restart-btn">Mängi uuesti</button>
+    <section id="screen-end" class="card hidden">
+      <h2 id="end-title"></h2>
+      <p id="end-score"></p>
+      <button id="btn-restart" type="button">Mängi uuesti</button>
     </section>
 
-  </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
