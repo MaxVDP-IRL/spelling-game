@@ -772,22 +772,40 @@
       els.modeOverlay.style.display = 'none';
     }
 
+const MATH_MAX = 100;
+    
     function makeMathQuestion(){
-      const ops = [];
-      if (mathAdd) ops.push('+');
-      if (mathSub) ops.push('-');
-      const op = ops.length ? ops[Math.floor(Math.random()*ops.length)] : '+';
+  const ops = [];
+  if (mathAdd) ops.push('+');
+  if (mathSub) ops.push('-');
+  const op = ops.length ? ops[Math.floor(Math.random()*ops.length)] : '+';
 
-      if (op === '+'){
-        const a = Math.floor(Math.random()*11);
-        const b = Math.floor(Math.random()*(11 - a));
-        return { kind:'math', op, a, b, expr: `${a} + ${b}`, answer: a + b };
-      }
+  if (op === '+'){
+    const a = Math.floor(Math.random() * (MATH_MAX + 1));
+    const b = Math.floor(Math.random() * (MATH_MAX - a + 1));
+    return {
+      kind: 'math',
+      op,
+      a,
+      b,
+      expr: `${a} + ${b}`,
+      answer: a + b
+    };
+  }
 
-      const a = Math.floor(Math.random()*11);
-      const b = Math.floor(Math.random()*(a+1));
-      return { kind:'math', op, a, b, expr: `${a} − ${b}`, answer: a - b };
-    }
+  // subtraction (no negatives)
+  const a = Math.floor(Math.random() * (MATH_MAX + 1));
+  const b = Math.floor(Math.random() * (a + 1));
+  return {
+    kind: 'math',
+    op,
+    a,
+    b,
+    expr: `${a} − ${b}`,
+    answer: a - b
+  };
+}
+
 
     function startRound(nextMode){
       mode = nextMode;
@@ -1173,5 +1191,6 @@
   </script>
 </body>
 </html>
+
 
 
